@@ -57,7 +57,7 @@ function getTodayShamsi() {
     };
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+function initializeApp() {
     setupShamsiDate();
     
     // ۱. پاکسازی ردیف فال‌بک اولیه HTML و بازسازی ردیف کاملاً پویا و متصل به دیتابیس
@@ -69,10 +69,13 @@ window.addEventListener('DOMContentLoaded', () => {
     
     loadInitialData();
     
-    document.getElementById('requestForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        submitRequestForm();
-    });
+    const requestForm = document.getElementById('requestForm');
+    if (requestForm) {
+        requestForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitRequestForm();
+        });
+    }
     
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
@@ -81,28 +84,52 @@ window.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const tr = activeEl.closest('tr');
                 if (tr) {
-                    const nextTr = tr.nextElementSibling;
-                    if (nextTr) {
-                        const currentClass = activeEl.className.split(' ').find(c => c.startsWith('item-') || c.startsWith('dept-'));
-                        const nextInput = nextTr.querySelector('.' + currentClass) || nextTr.querySelector('.item-select');
-                        if (nextInput) nextInput.focus();
+                    // Find all interactive inputs/selects in this specific row
+                    const rowInputs = Array.from(tr.querySelectorAll('input:not([disabled]), select:not([disabled])'));
+                    const currentIndex = rowInputs.indexOf(activeEl);
+                    
+                    if (currentIndex >= 0 && currentIndex < rowInputs.length - 1) {
+                        // Move to next input in the SAME row
+                        rowInputs[currentIndex + 1].focus();
                     } else {
-                        addItemRow();
-                        const lastTr = document.querySelector('#itemsTableBody tr:last-child');
-                        if (lastTr) {
-                            const nextInput = lastTr.querySelector('.item-select');
-                            if (nextInput) nextInput.focus();
+                        // We are at the last input of the row
+                        const nextTr = tr.nextElementSibling;
+                        if (nextTr) {
+                            // Focus first input of the next row
+                            const nextInputs = nextTr.querySelectorAll('input:not([disabled]), select:not([disabled])');
+                            if (nextInputs.length > 0) {
+                                nextInputs[0].focus();
+                            }
+                        } else {
+                            // We are at the very last row, dynamically create a new row!
+                            addItemRow();
+                            // Wait a tiny bit for the DOM to update, then focus the first input of the newly added row
+                            setTimeout(() => {
+                                const lastTr = document.querySelector('#itemsTableBody tr:last-child');
+                                if (lastTr) {
+                                    const nextInputs = lastTr.querySelectorAll('input:not([disabled]), select:not([disabled])');
+                                    if (nextInputs.length > 0) {
+                                        nextInputs[0].focus();
+                                    }
+                                }
+                            }, 10);
                         }
                     }
                 }
             }
         }
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
 
 function setupShamsiDate() {
     const today = getTodayShamsi();
-    const formatted = today.day + '/' + today.month + '/' + today.year;
+    const formatted = today.year + '/' + today.month + '/' + today.day;
     const dateInput = document.getElementById('request_date');
     if (dateInput) {
         dateInput.value = formatted;
@@ -216,7 +243,7 @@ function addItemRow() {
         '<td><input type="number" class="form-control form-control-excel item-qty text-center" min="1" value="1" required></td>' +
         '<td class="text-center"><span class="badge bg-light text-dark item-unit-badge">-</span></td>' +
         '<td><input type="text" class="form-control form-control-excel item-desc" placeholder="..."></td>' +
-        '<td class="text-center"><button type="button" class="btn-outline-danger" onclick="removeItemRow(\'' + rowId + '\')">✕</button></td>';
+        '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger" style="padding: 4px 8px !important; min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;" onclick="removeItemRow(\'' + rowId + '\')">✕</button></td>';
     container.appendChild(tr);
     populateItemDropdown(tr.querySelector('.item-select'));
     populateDeptDropdown(tr.querySelector('.dept-select'));
@@ -328,18 +355,36 @@ function submitRequestForm() {
     const rows = document.querySelectorAll('#itemsTableBody tr');
     const request_date = document.getElementById('request_date').value.trim();
     const items = [];
+    let hasIncompleteRow = false;
+    
     rows.forEach(row => {
-        const item_id = row.querySelector('.item-select').value;
-        const department_id = row.querySelector('.dept-select').value;
-        const quantity = row.querySelector('.item-qty').value;
-        const description = row.querySelector('.item-desc').value;
+        const item_select = row.querySelector('.item-select');
+        const dept_select = row.querySelector('.dept-select');
+        const qty_input = row.querySelector('.item-qty');
+        const desc_input = row.querySelector('.item-desc');
+        
+        const item_id = item_select ? item_select.value : '';
+        const department_id = dept_select ? dept_select.value : '';
+        const quantity = qty_input ? qty_input.value : '';
+        const description = desc_input ? desc_input.value : '';
         const db_item_id = row.getAttribute('data-db-item-id') || null;
-        if (item_id && department_id && quantity > 0) {
-            items.push({ id: db_item_id, item_id, department_id, quantity, description });
+        
+        if (item_id || department_id || (quantity && quantity != '1') || description) {
+            if (!item_id || !department_id || !quantity || quantity <= 0) {
+                hasIncompleteRow = true;
+            } else {
+                items.push({ id: db_item_id, item_id, department_id, quantity, description });
+            }
         }
     });
+    
     if (!request_date) { showToast('error', 'تاریخ را وارد کنید.'); return; }
+    if (hasIncompleteRow) {
+        showToast('error', 'لطفاً برای تمامی ردیف‌های فعال، نام کالا، بخش متقاضی و تعداد معتبر وارد کنید.');
+        return;
+    }
     if (items.length === 0) { showToast('error', 'حداقل یک ردیف کامل وارد کنید.'); return; }
+    
     const fd = new FormData();
     fd.append('request_date', request_date);
     fd.append('items', JSON.stringify(items));
@@ -424,7 +469,11 @@ function filterRequestsList() {
                 '<td><span class="badge bg-dark">' + req.items.length + ' ردیف</span></td>' +
                 '<td>' + req.request_date + '</td>' +
                 '<td>' + badge + '</td>' +
-                '<td><button class="btn btn-outline-official" onclick="showDetails(' + req.id + ')">مشاهده و پیگیری</button> <button class="btn-edit" onclick="editDocument(' + req.id + ')" style="margin-right: 5px; background-color: #ff9800; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-family: Tahoma;">ویرایش</button> <button class="btn-delete" onclick="deleteDocument(' + req.id + ')" style="margin-right: 5px; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-family: Tahoma;">حذف</button></td>';
+                '<td>' +
+                    '<button class="btn btn-sm btn-outline-official" onclick="showDetails(' + req.id + ')">🔍 مشاهده و پیگیری</button> ' +
+                    '<button class="btn btn-sm btn-outline-warning" style="margin-right: 5px;" onclick="editDocument(' + req.id + ')">✏️ ویرایش</button> ' +
+                    '<button class="btn btn-sm btn-outline-danger" style="margin-right: 5px;" onclick="deleteDocument(' + req.id + ')">🗑️ حذف</button>' +
+                '</td>';
             tableBody.appendChild(tr);
         });
     }
@@ -551,6 +600,7 @@ function prepareAndPrint(req, unpurchasedOnly) {
         showToast("error", "هیچ قلمی برای پرینت وجود ندارد.");
         return;
     }
+    window.focus();
     window.print();
 }
 
@@ -614,6 +664,7 @@ function printAllUnpurchasedItems() {
         return;
     }
     
+    window.focus();
     window.print();
 }
 
@@ -859,3 +910,30 @@ function deleteDeptFromManage(id) {
             }
         });
 }
+
+// Expose functions globally to ensure they are fully accessible regardless of load conditions
+window.submitRequestForm = submitRequestForm;
+window.editDocument = editDocument;
+window.deleteDocument = deleteDocument;
+window.showDetails = showDetails;
+window.addItemRow = addItemRow;
+window.removeItemRow = removeItemRow;
+window.cancelEditing = cancelEditing;
+window.printAllUnpurchasedItems = printAllUnpurchasedItems;
+window.openManageDeptsModal = openManageDeptsModal;
+window.openManageItemsModal = openManageItemsModal;
+window.editItemFromManage = editItemFromManage;
+window.deleteItemFromManage = deleteItemFromManage;
+window.editDeptFromManage = editDeptFromManage;
+window.deleteDeptFromManage = deleteDeptFromManage;
+window.checkNewItem = checkNewItem;
+window.checkNewDept = checkNewDept;
+window.cancelNewItem = cancelNewItem;
+window.cancelNewDept = cancelNewDept;
+window.saveNewItem = saveNewItem;
+window.saveNewDept = saveNewDept;
+window.showToast = showToast;
+window.closeModal = closeModal;
+window.openModal = openModal;
+window.filterRequestsList = filterRequestsList;
+

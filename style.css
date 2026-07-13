@@ -277,15 +277,84 @@ header {
 .btn-outline-danger {
     background-color: transparent;
     color: var(--danger);
-    border: 1px solid #fee2e2;
-    padding: 6px 12px;
-    font-size: 12px;
+    border: 1px solid var(--danger);
 }
 
 .btn-outline-danger:hover {
     background-color: var(--danger);
     color: white;
     border-color: var(--danger);
+}
+
+.btn-sm {
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    border-radius: 6px !important;
+    height: 34px !important;
+    font-family: 'BNazanin', sans-serif !important;
+    font-weight: bold !important;
+}
+
+.btn-outline-warning {
+    background-color: transparent !important;
+    color: var(--warning) !important;
+    border: 1px solid var(--warning) !important;
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--warning) !important;
+    color: white !important;
+}
+
+/* Excel Table Form Controls and Column Minimum Widths */
+.table-excel td {
+    padding: 8px 10px !important;
+    vertical-align: middle !important;
+}
+
+.form-control-excel, .form-select-excel {
+    height: 38px !important;
+    padding: 6px 20px !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+    font-family: 'BNazanin', sans-serif !important;
+    font-weight: bold !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid var(--border) !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.form-select-excel {
+    padding-left: 32px !important; /* Ensure enough space for the arrow in RTL on the left */
+    padding-right: 20px !important;
+}
+
+.form-control-excel:focus, .form-select-excel:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+    outline: none !important;
+}
+
+.item-select {
+    min-width: 250px !important;
+}
+
+.dept-select {
+    min-width: 180px !important;
+}
+
+.item-qty {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: center !important;
+}
+
+.item-desc {
+    min-width: 260px !important;
 }
 
 /* Inputs */
@@ -450,8 +519,8 @@ header {
 
 /* Print */
 @media print {
-    body { padding: 0; background: white; }
-    .main-content, .sidebar, .custom-modal, .toast-container { display: none !important; }
+    body { padding: 0 !important; background: white !important; }
+    .app-wrapper, .main-content, .sidebar, .custom-modal, .toast-container { display: none !important; }
     #printContainer { display: block !important; }
     .print-table th { background: #f1f5f9 !important; border: 1px solid #000 !important; }
     .print-table td { border: 1px solid #000 !important; }
