@@ -11,8 +11,8 @@
 }
 
 :root {
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
+    --primary: #0f766e;
+    --primary-hover: #115e59;
     --secondary: #64748b;
     --success: #10b981;
     --danger: #ef4444;
@@ -382,34 +382,144 @@ header {
     overflow-x: auto;
 }
 
-.table-excel, .table-hover {
-    width: 100%;
-    border-collapse: collapse;
+.table-excel, .table-hover, .table-bordered, .table-excel table, .table-hover table, .table-bordered table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1px solid #cbd5e1 !important;
 }
 
-.table-excel th, .table-hover th {
-    background-color: #f8fafc;
-    color: var(--text-main);
-    font-family: 'BTitr', sans-serif;
-    padding: 14px;
-    font-size: 14px;
-    text-align: center;
-    border-bottom: 2px solid var(--border);
+.table-excel th, .table-hover th, .table-bordered th {
+    background-color: #f0fdfa !important; /* Soft light green theme color */
+    color: #0f766e !important; /* Theme primary dark teal */
+    font-family: 'BTitr', sans-serif !important;
+    font-weight: 800 !important;
+    padding: 14px !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    border: 1px solid #cbd5e1 !important;
 }
 
-.table-excel td, .table-hover td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    text-align: center;
+.table-excel td, .table-hover td, .table-bordered td {
+    padding: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 14px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
 }
 
 .table-hover tbody tr:hover {
     background-color: #f1f5f9;
 }
 
-.table-bordered th, .table-bordered td {
-    border: 1px solid var(--border);
+/* Ensure fields, inputs and selects inside tables are centered */
+.table-excel input, .table-excel select, .table-excel span, .table-excel div,
+.table-hover input, .table-hover select, .table-hover span, .table-hover div,
+.table-bordered input, .table-bordered select, .table-bordered span, .table-bordered div {
+    text-align: center !important;
+    text-align-last: center !important;
+}
+
+/* Searchable Select Dropdown Styles */
+.searchable-select-wrapper {
+    position: relative;
+    width: 100%;
+    text-align: center;
+}
+
+.searchable-select-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 38px;
+    padding: 6px 15px;
+    font-size: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    font-family: 'BNazanin', sans-serif;
+    font-weight: bold;
+    text-align: center;
+    text-align-last: center;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchable-select-btn:hover {
+    border-color: var(--primary);
+}
+
+.searchable-select-btn::after {
+    content: "▼";
+    font-size: 10px;
+    color: var(--secondary);
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.searchable-select-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: #ffffff;
+    border: 1.5px solid var(--primary);
+    border-radius: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    margin-top: 4px;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.searchable-select-search {
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1.5px solid var(--border);
+    font-family: 'BNazanin', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.searchable-select-search:focus {
+    border-bottom-color: var(--primary);
+}
+
+.searchable-select-options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    max-height: 200px;
+    text-align: center;
+}
+
+.searchable-select-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'BNazanin', sans-serif;
+    font-weight: bold;
+    transition: background-color 0.15s;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.searchable-select-option:hover {
+    background-color: #e6f4f1; /* Very light primary theme tint */
+    color: var(--primary);
+}
+
+.searchable-select-option.selected {
+    background-color: var(--primary);
+    color: #ffffff;
 }
 
 .table-dark {
@@ -533,17 +643,58 @@ header {
 }
 .print-table th, .print-table td {
     border: 1px solid #000000 !important;
-    padding: 6px;
+    padding: 6px 10px !important; /* Exactly 10px right & left padding */
     text-align: center;
     font-size: 12px;
-    white-space: nowrap;
-}
-.print-table td:nth-child(6) {
-    white-space: normal;
-    word-break: break-word;
 }
 .print-table th {
     background-color: #e5e5e5 !important;
     font-family: 'BTitr', sans-serif !important;
     font-size: 12px !important;
 }
+
+/* Print Columns Sizing */
+.print-col-shrink {
+    width: 1% !important;
+    white-space: nowrap !important;
+}
+.print-col-grow {
+    width: auto !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    text-align: right !important; /* Right aligned for beautiful RTL description text */
+}
+
+/* Modal Search List Item Styles */
+.modal-search-item-row {
+    padding: 12px 18px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    font-family: 'BNazanin', sans-serif;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.15s, color 0.15s;
+    user-select: none;
+}
+.modal-search-item-row:last-child {
+    border-bottom: none;
+}
+.modal-search-item-row:hover {
+    background-color: #f0fdfa !important;
+    color: var(--primary) !important;
+}
+.modal-search-item-row.selected {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+}
+.modal-search-item-row.selected .text-muted {
+    color: #ccfbf1 !important;
+}
+
+.d-none {
+    display: none !important;
+}
+

@@ -149,8 +149,7 @@
     <main class="main-content">
         <div class="container">
             <header>
-                <h2 class="title-main">ثبت و مدیریت درخواست‌های خرید</h2>
-                <p class="subtitle-main">مجتمع خیریه و درمانی حضرت امام هادی(ع)</p>
+                <p class="subtitle-main" style="font-size: 20px; font-family: 'BTitr', sans-serif; color: var(--primary); margin-top: 10px;">مجتمع خیریه و درمانی حضرت امام هادی(ع)</p>
             </header>
 
             <div class="card">
@@ -159,7 +158,7 @@
                 </div>
                 <div class="card-body">
                     <form id="requestForm" onsubmit="event.preventDefault(); if (typeof submitRequestForm === 'function') { submitRequestForm(); } else { console.error('submitRequestForm not loaded yet!'); }">
-                        <div style="display: flex; align-items: right; gap: 10px; padding: 5px 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; width: fit-content;">
+                        <div style="display: flex; align-items: right; gap: 5px; padding: 5px 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; width: fit-content;">
                             <label class="fw-bold mb-0" style="white-space: nowrap; align-self: center; font-size: 14px;">تاریخ درخواست:</label>
                             <input id="request_date" placeholder="سال/ماه/روز" required="" style="border: none; outline: none; background: transparent; width: 120px; text-align: center; font-family: 'BNazanin', sans-serif; font-weight: bold; font-size: 16px; direction: rtl !important;" type="text"/>
                         </div>
@@ -265,7 +264,7 @@
 </div>
 <div class="table-responsive">
 <table class="table-bordered align-middle text-center" style="width: 100%; border-collapse: collapse;">
-<thead class="table-dark">
+<thead>
 <tr>
 <th style="width: 1%; white-space: nowrap;">ردیف</th>
 <th>نام کالا</th>
@@ -299,9 +298,27 @@
             <button class="custom-modal-close" onclick="closeModal('manageItemsModal')" type="button">✕</button>
         </div>
         <div class="custom-modal-body">
+            <!-- Inline form for adding new item directly from here -->
+            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: #f0fdfa; border: 1px dashed var(--primary);">
+                <h6 class="fw-bold mb-3" style="color: var(--primary); font-family: 'BTitr', sans-serif; font-size: 15px;">➕ تعریف کالا جدید در سیستم</h6>
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label small fw-bold mb-1" style="display: block; font-size: 13px;">نام کالا:</label>
+                        <input class="form-control" id="manage_new_item_name" placeholder="مثال: سرسوزن مزوتراپی" type="text" style="height: 38px;"/>
+                    </div>
+                    <div style="width: 150px;">
+                        <label class="form-label small fw-bold mb-1" style="display: block; font-size: 13px;">واحد اندازه گیری:</label>
+                        <input class="form-control" id="manage_new_item_unit" placeholder="عدد" type="text" value="عدد" style="height: 38px; text-align: center;"/>
+                    </div>
+                    <div>
+                        <button class="btn btn-official" onclick="saveNewItemFromManage()" type="button" style="height: 38px; font-size: 14px; padding: 0 20px;">افزودن کالا</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="table-bordered align-middle" style="width: 100%; border-collapse: collapse;">
-                    <thead class="table-dark">
+                    <thead>
                         <tr>
                             <th>نام کالا</th>
                             <th>واحد</th>
@@ -321,9 +338,23 @@
             <button class="custom-modal-close" onclick="closeModal('manageDeptsModal')" type="button">✕</button>
         </div>
         <div class="custom-modal-body">
+            <!-- Inline form for adding new department directly from here -->
+            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: #f0fdfa; border: 1px dashed var(--primary);">
+                <h6 class="fw-bold mb-3" style="color: var(--primary); font-family: 'BTitr', sans-serif; font-size: 15px;">➕ تعریف بخش جدید در سیستم</h6>
+                <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label class="form-label small fw-bold mb-1" style="display: block; font-size: 13px;">نام بخش جدید:</label>
+                        <input class="form-control" id="manage_new_dept_name" placeholder="مثال: بخش بستری مردان" type="text" style="height: 38px;"/>
+                    </div>
+                    <div>
+                        <button class="btn btn-official" onclick="saveNewDeptFromManage()" type="button" style="height: 38px; font-size: 14px; padding: 0 20px;">افزودن بخش</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="table-bordered align-middle" style="width: 100%; border-collapse: collapse;">
-                    <thead class="table-dark">
+                    <thead>
                         <tr>
                             <th>نام بخش</th>
                             <th>عملیات</th>
@@ -397,31 +428,69 @@
     </div>
 </div>
 
+<!-- Search Item Modal -->
+<div class="custom-modal" id="searchItemModal">
+    <div class="custom-modal-content" style="max-width: 500px;">
+        <div class="custom-modal-header" style="border-bottom: none; margin-bottom: 12px; padding-bottom: 0;">
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">🔍 جستجو و انتخاب کالا</h6>
+            <button class="custom-modal-close" onclick="closeModal('searchItemModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body" style="direction: rtl; text-align: right;">
+            <div class="mb-3">
+                <input type="text" id="modalSearchItemInput" class="form-control text-center fw-bold" placeholder="نام کالا را وارد کنید..." style="height: 42px; font-size: 15px; border-color: var(--primary);">
+            </div>
+            <div id="modalSearchItemList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 15px;">
+                <!-- List of items loaded dynamically -->
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-official" onclick="closeModal('searchItemModal'); openManageItemsModal();" style="font-size: 13px;">⚙️ تعریف کالا جدید</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="closeModal('searchItemModal')" style="font-size: 13px;">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Dept Modal -->
+<div class="custom-modal" id="searchDeptModal">
+    <div class="custom-modal-content" style="max-width: 500px;">
+        <div class="custom-modal-header" style="border-bottom: none; margin-bottom: 12px; padding-bottom: 0;">
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">🔍 جستجو و انتخاب بخش متقاضی</h6>
+            <button class="custom-modal-close" onclick="closeModal('searchDeptModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body" style="direction: rtl; text-align: right;">
+            <div class="mb-3">
+                <input type="text" id="modalSearchDeptInput" class="form-control text-center fw-bold" placeholder="نام بخش را وارد کنید..." style="height: 42px; font-size: 15px; border-color: var(--primary);">
+            </div>
+            <div id="modalSearchDeptList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 15px;">
+                <!-- List of departments loaded dynamically -->
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-official" onclick="closeModal('searchDeptModal'); openManageDeptsModal();" style="font-size: 13px;">⚙️ تعریف بخش جدید</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="closeModal('searchDeptModal')" style="font-size: 13px;">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="d-none" id="printContainer">
-<div class="print-header-clean text-center">
-<h3 class="print-main-title">مجتمع خیریه و درمانی حضرت امام هادی(ع)</h3>
-<p class="print-sub-title">برگه درخواست خرید</p>
-<table class="w-100 print-meta-table">
-<tr>
-<td class="text-right" style="width: 50%; font-size: 13px; font-weight: bold;">
-                        ش.درخواست: <span id="p-req-id"></span>
-</td>
-<td class="text-left" style="width: 50%; font-size: 13px; font-weight: bold;">
-                        تاریخ: <span id="p-req-date"></span>
-</td>
-</tr>
-</table>
+<div class="print-header-clean text-center" style="margin: 0; padding: 0;">
+<h3 class="print-main-title" style="margin: 0; padding: 0; font-family: 'BTitr', sans-serif; font-size: 16px; font-weight: bold;">مجتمع خیریه و درمانی حضرت امام هادی(ع)</h3>
+<p class="print-sub-title" style="margin: 10px 0 0 0; padding: 0; font-family: 'BTitr', sans-serif; font-size: 14px; font-weight: bold; color: #1e293b;">برگه خرید کسریهای درخواست خرید</p>
+<div class="print-meta-row" style="display: flex; justify-content: center; gap: 160px; margin-top: 40px !important; margin-bottom: 30px !important; font-size: 14px; font-weight: bold; direction: rtl;">
+    <span>ش.درخواست: <span id="p-req-id"></span></span>
+    <span>تاریخ: <span id="p-req-date"></span></span>
+</div>
 </div>
 <div class="print-body mt-4">
 <table class="print-table">
 <thead>
 <tr>
-<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">ردیف</th>
-<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">شرح کالا</th>
-<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">بخش متقاضی</th>
-<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">تعداد</th>
-<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">واحد</th>
-<th style="width: 100%; padding-left: 10px !important; padding-right: 10px !important;">توضیحات</th>
+<th class="print-col-shrink">ردیف</th>
+<th class="print-col-shrink">شرح کالا</th>
+<th class="print-col-shrink">بخش متقاضی</th>
+<th class="print-col-shrink">تعداد</th>
+<th class="print-col-shrink">واحد</th>
+<th class="print-col-grow">توضیحات</th>
 </tr>
 </thead>
 <tbody id="p-items-body">
