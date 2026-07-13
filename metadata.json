@@ -1,0 +1,8 @@
+{
+  "name": "درخواست خرید - مجتمع خیریه امام هادی(ع)",
+  "description": "سامانه مدیریت درخواست خرید و تدارکات داخلی مجتمع خیریه و درمانی حضرت امام هادی(ع).",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

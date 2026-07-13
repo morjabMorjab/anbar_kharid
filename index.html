@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>درخواست خرید - مجتمع خیریه و درمانی حضرت امام هادی(ع)</title>
+<link href="style.css" rel="stylesheet"/>
+<style>
+        /* اعمال پدینگ چپ و راست ۷ پیکسلی روی تمام جداول وب‌سایت به جز ستون توضیحات (ستون آخر) */
+        .table-excel th:not(:last-child), .table-excel td:not(:last-child),
+        .table-hover th:not(:last-child), .table-hover td:not(:last-child),
+        .table-bordered th:not(:last-child), .table-bordered td:not(:last-child) {
+            padding-left: 7px !important;
+            padding-right: 7px !important;
+        }
+
+        /* تنظیم پهنای اینپوت تعداد به اندازه ۴ رقم (۷۵ پیکسل) در سراسر وب‌سایت */
+        .item-qty {
+            width: 75px !important;
+            max-width: 75px !important;
+            margin: 0 auto !important;
+        }
+
+        @page {
+            size: A5 portrait; /* کاغذ A5 عمودی */
+            margin: 0 !important; /* صفر کردن حاشیه پیش‌فرض مرورگر جهت کنترل ۱۰۰٪ دستی فواصل در CSS */
+        }
+        @media print {
+            body {
+                background-color: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important; /* خنثی کردن تراز Flexbox جهت هم‌ترازی افقی */
+                direction: rtl !important;
+                width: 148mm !important; /* پهنای فیزیکی کامل کاغذ A5 */
+                max-width: 148mm !important;
+                box-sizing: border-box !important;
+            }
+            #printContainer {
+                display: block !important;
+                width: 148mm !important;
+                max-width: 148mm !important;
+                margin: 0 !important;
+                /* اعمال پدینگ فیزیکی دقیقاً ۱ سانتی‌متری (۱۰ میلی‌متر) از لبه‌های کاغذ */
+                padding-right: 10mm !important; /* ایجاد فاصله دقیقاً ۱ سانتی‌متری قبل از ستون ردیف (راست) */
+                padding-left: 10mm !important;  /* ایجاد فاصله دقیقاً ۱ سانتی‌متری بعد از ستون توضیحات (چپ) */
+                padding-top: 10mm !important;
+                padding-bottom: 10mm !important;
+                box-sizing: border-box !important;
+            }
+            .print-table {
+                width: 100% !important;
+                max-width: 100% !important;
+                table-layout: auto !important; /* توزیع هوشمند بر اساس محتوای واقعی هر ستون */
+                border-collapse: collapse !important;
+                box-sizing: border-box !important;
+            }
+            /* پدینگ دقیق ۷ پیکسلی چپ و راست برای تمامی ستون‌ها به جز ستون آخر (توضیحات) */
+            .print-table th:not(:last-child), .print-table td:not(:last-child) {
+                box-sizing: border-box !important;
+                padding-left: 7px !important;  /* پدینگ چپ ۷ پیکسل */
+                padding-right: 7px !important; /* پدینگ راست ۷ پیکسل */
+                padding-top: 5px !important;
+                padding-bottom: 5px !important;
+                font-size: 11px !important;
+                text-align: center !important;
+                vertical-align: middle !important;
+                border: 1px solid #333 !important; /* خطوط مرزی جدول */
+                white-space: nowrap !important;
+            }
+            /* پدینگ متمایز ستون توضیحات (ستون آخر) با تراز کاملاً وسط‌چین شده */
+            .print-table th:last-child, .print-table td:last-child {
+                box-sizing: border-box !important;
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+                padding-top: 5px !important;
+                padding-bottom: 5px !important;
+                font-size: 11px !important;
+                text-align: center !important; /* وسط‌چین کردن هم سرستون و هم محتوای داخل سلول‌های توضیحات */
+                vertical-align: middle !important;
+                border: 1px solid #333 !important;
+                white-space: normal !important; /* اجازه به متن توضیحات برای شکستن و رفتن به خط بعدی */
+            }
+        }
+
+/* تنظیم پهنای محتوایی + 10px پدینگ برای ستون کالای درخواستی و بخش متقاضی */
+.table-excel th:nth-child(2),
+.table-excel td:nth-child(2),
+.table-excel th:nth-child(3),
+.table-excel td:nth-child(3) {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    width: auto !important;
+    white-space: nowrap !important;
+}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="app-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>مجتمع امام هادی(ع)</h2>
+            <p>سامانه تدارکات و کارپردازی</p>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a class="nav-link" onclick="openManageItemsModal()">
+                    <span>📦 مدیریت کالاها</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a class="nav-link" onclick="openManageDeptsModal()">
+                    <span>🏢 مدیریت بخش‌ها</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a class="nav-link" onclick="printAllUnpurchasedItems()">
+                    <span>🖨️ پرینت کلی کسری‌ها</span>
+                </a>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">جستجوی هوشمند اسناد</div>
+                <input class="form-control" id="search_query" oninput="filterRequestsList()" placeholder="نام کالا یا بخش..." type="text"/>
+                <select class="form-select" id="filter_dept" onchange="filterRequestsList()">
+                    <option value="">همه بخش‌ها</option>
+                </select>
+                <select class="form-select" id="filter_status" onchange="filterRequestsList()">
+                    <option value="">همه وضعیت‌ها</option>
+                    <option value="pending">تامین نشده</option>
+                    <option value="partial">تامین شده (ناقص)</option>
+                    <option value="purchased">تامین شده (کامل)</option>
+                </select>
+                <input class="form-control text-center" id="filter_date" oninput="filterRequestsList()" placeholder="فیلتر تاریخ (مثلاً 1402)" type="text"/>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="text-center small opacity-50">نسخه ۱.۴.۰</div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container">
+            <header>
+                <h2 class="title-main">ثبت و مدیریت درخواست‌های خرید</h2>
+                <p class="subtitle-main">مجتمع خیریه و درمانی حضرت امام هادی(ع)</p>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>ثبت برگه درخواست خرید جدید</span>
+                </div>
+                <div class="card-body">
+                    <form id="requestForm">
+                        <div style="display: flex; align-items: right; gap: 10px; padding: 5px 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; width: fit-content;">
+                            <label class="fw-bold mb-0" style="white-space: nowrap; align-self: center; font-size: 14px;">تاریخ درخواست:</label>
+                            <input id="request_date" placeholder="روز/ماه/سال" required="" style="border: none; outline: none; background: transparent; width: 120px; text-align: center; font-family: 'BNazanin', sans-serif; font-weight: bold; font-size: 16px;" type="text"/>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-excel">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 1%; white-space: nowrap;">ردیف</th>
+                                        <th style="white-space: nowrap;">کالای درخواستی</th>
+                                        <th style="white-space: nowrap;">بخش متقاضی</th>
+                                        <th style="width: 1%; white-space: nowrap;">تعداد</th>
+                                        <th style="width: 1%; white-space: nowrap;">واحد</th>
+                                        <th style="width: 100%;">توضیحات کالا</th>
+                                        <th style="width: 1%; white-space: nowrap;">حذف</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTableBody">
+                                    <!-- Rows will be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button class="btn btn-outline-official" onclick="addItemRow()" type="button">
+                                ➕ افزودن ردیف جدید
+                            </button>
+                            <button class="btn btn-official px-5" type="submit">
+                                ثبت نهایی و ذخیره سند
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>آرشیو اسناد و پیگیری وضعیت تامین کالاها</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-hover align-middle mb-0 text-center">
+                            <thead>
+                                <tr>
+                                    <th class="py-3">کد سند</th>
+                                    <th class="py-3">تعداد اقلام</th>
+                                    <th class="py-3">تاریخ ثبت</th>
+                                    <th class="py-3">وضعیت نهایی</th>
+                                    <th class="py-3">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center py-5 d-none" id="noDataMessage">
+                        <p class="text-muted mb-0">هیچ سندی با فیلترهای انتخابی شما مطابقت ندارد.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<div class="custom-modal" id="newDeptModal">
+<div class="custom-modal-content">
+<div class="custom-modal-header">
+<h6 class="custom-modal-title">تعریف بخش جدید</h6>
+<button class="custom-modal-close" onclick="cancelNewDept()" type="button">✕</button>
+</div>
+<div class="custom-modal-body">
+<div class="mb-3">
+<label class="form-label">نام بخش جدید</label>
+<input class="form-control" id="new_dept_name" placeholder="مثال: بخش بستری مردان" type="text"/>
+</div>
+<button class="btn btn-official w-100" onclick="saveNewDept()" type="button">ذخیره</button>
+</div>
+</div>
+</div>
+<div class="custom-modal" id="newItemModal">
+<div class="custom-modal-content">
+<div class="custom-modal-header">
+<h6 class="custom-modal-title">تعریف کالا جدید</h6>
+<button class="custom-modal-close" onclick="cancelNewItem()" type="button">✕</button>
+</div>
+<div class="custom-modal-body">
+<div class="mb-3">
+<label class="form-label">نام کالا</label>
+<input class="form-control" id="new_item_name" placeholder="مثال: سرسوزن مزوتراپی" type="text"/>
+</div>
+<div class="mb-3">
+<label class="form-label">واحد اندازه گیری</label>
+<input class="form-control" id="new_item_unit" placeholder="مثال: عدد، بسته، کارتن" type="text" value="عدد"/>
+</div>
+<button class="btn btn-official w-100" onclick="saveNewItem()" type="button">ذخیره</button>
+</div>
+</div>
+</div>
+<div class="custom-modal" id="detailsModal">
+<div class="custom-modal-content modal-xl">
+<div class="custom-modal-header">
+<h5 class="custom-modal-title">کنترل وضعیت خرید و پیگیری سند</h5>
+<button class="custom-modal-close" onclick="closeModal('detailsModal')" type="button">✕</button>
+</div>
+<div class="custom-modal-body">
+<div class="row mb-3">
+<div class="col-6"><strong>ش.سند درخواست:</strong> <span id="modalReqId"></span></div>
+<div class="col-6 text-end"><strong>تاریخ ثبت سند:</strong> <span id="modalDate"></span></div>
+</div>
+<div class="table-responsive">
+<table class="table-bordered align-middle text-center" style="width: 100%; border-collapse: collapse;">
+<thead class="table-dark">
+<tr>
+<th style="width: 1%; white-space: nowrap;">ردیف</th>
+<th>نام کالا</th>
+<th style="white-space: nowrap;">بخش متقاضی</th>
+<th>تعداد درخواستی</th>
+<th style="width: 25%;">تعداد خریداری شده</th>
+<th style="width: 1%; white-space: nowrap;">واحد</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody id="modalItemsBody"></tbody>
+</table>
+</div>
+<div class="d-flex justify-content-between align-items-center mt-3 bg-light-gray p-3 rounded border-light-dark flex-wrap gap-2">
+<div>
+<span class="text-muted small">با ورود مقادیر خریداری شده، مغایرت‌ها و اقلام تامین‌نشده به‌صورت خودکار تفکیک می‌شوند.</span>
+</div>
+<div class="d-flex gap-2">
+<button class="btn btn-official px-3" id="saveProgressBtn" type="button">ثبت آمار خرید</button>
+<button class="btn btn-outline-official px-3" id="printModalBtn" type="button">پرینت کامل (A5)</button>
+<button class="btn btn-outline-official px-3" id="printUnpurchasedBtn" type="button">پرینت اقلام تأمین‌نشده</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="custom-modal" id="manageItemsModal">
+    <div class="custom-modal-content modal-xl">
+        <div class="custom-modal-header">
+            <h6 class="custom-modal-title">مدیریت لیست کالاها</h6>
+            <button class="custom-modal-close" onclick="closeModal('manageItemsModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body">
+            <div class="table-responsive">
+                <table class="table-bordered align-middle" style="width: 100%; border-collapse: collapse;">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>نام کالا</th>
+                            <th>واحد</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manageItemsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="custom-modal" id="manageDeptsModal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h6 class="custom-modal-title">مدیریت لیست بخش‌ها</h6>
+            <button class="custom-modal-close" onclick="closeModal('manageDeptsModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body">
+            <div class="table-responsive">
+                <table class="table-bordered align-middle" style="width: 100%; border-collapse: collapse;">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>نام بخش</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manageDeptsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="d-none" id="printContainer">
+<div class="print-header-clean text-center">
+<h3 class="print-main-title">مجتمع خیریه و درمانی حضرت امام هادی(ع)</h3>
+<p class="print-sub-title">برگه درخواست خرید</p>
+<table class="w-100 print-meta-table">
+<tr>
+<td class="text-right" style="width: 50%; font-size: 13px; font-weight: bold;">
+                        ش.درخواست: <span id="p-req-id"></span>
+</td>
+<td class="text-left" style="width: 50%; font-size: 13px; font-weight: bold;">
+                        تاریخ: <span id="p-req-date"></span>
+</td>
+</tr>
+</table>
+</div>
+<div class="print-body mt-4">
+<table class="print-table">
+<thead>
+<tr>
+<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">ردیف</th>
+<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">شرح کالا</th>
+<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">بخش متقاضی</th>
+<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">تعداد</th>
+<th style="width: 1%; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap;">واحد</th>
+<th style="width: 100%; padding-left: 10px !important; padding-right: 10px !important;">توضیحات</th>
+</tr>
+</thead>
+<tbody id="p-items-body">
+</tbody>
+</table>
+</div>
+<div class="print-footer mt-5">
+<table class="w-100 footer-table text-center" style="width: 100%; font-size: 13px; font-weight: bold;">
+<tr>
+<td style="width: 25%;">
+<p>انباردار</p>
+<br/><br/>
+<span>...........................</span>
+</td>
+<td style="width: 25%;">
+<p>مسئول انبار</p>
+<br/><br/>
+<span>...........................</span>
+</td>
+<td style="width: 25%;">
+<p>مسئول کارپردازی</p>
+<br/><br/>
+<span>...........................</span>
+</td>
+<td style="width: 25%;">
+<p>مدیر مالی</p>
+<br/><br/>
+<span>...........................</span>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>

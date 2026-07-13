@@ -1,0 +1,27 @@
+# Token files
+env.anbar_kharid
+*.token
+*.secret
+.env
+
+# PHP
+*.log
+*.cache
+*.tmp
+
+# WAMP
+*.pid
+*.lock
+
+# Python
+__pycache__/
+*.pyc
+
+# System
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
