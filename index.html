@@ -335,6 +335,68 @@
         </div>
     </div>
 </div>
+
+<!-- Custom Confirm Modal -->
+<div class="custom-modal" id="customConfirmModal">
+    <div class="custom-modal-content" style="max-width: 450px;">
+        <div class="custom-modal-header">
+            <h6 class="custom-modal-title" style="color: #dc2626; font-family: 'BTitr', sans-serif;">تایید عملیات</h6>
+            <button class="custom-modal-close" onclick="closeModal('customConfirmModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body">
+            <p id="customConfirmMessage" class="mb-4 text-end" style="font-size: 15px; font-weight: 500; line-height: 1.6; direction: rtl;"></p>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary px-4" onclick="closeModal('customConfirmModal')">انصراف</button>
+                <button type="button" class="btn btn-danger px-4" id="customConfirmBtn">تایید</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Edit Item Modal -->
+<div class="custom-modal" id="editItemFromManageModal">
+    <div class="custom-modal-content" style="max-width: 450px;">
+        <div class="custom-modal-header">
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">ویرایش کالا</h6>
+            <button class="custom-modal-close" onclick="closeModal('editItemFromManageModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body text-end" style="direction: rtl;">
+            <div class="mb-3">
+                <label class="form-label fw-bold">نام جدید کالا:</label>
+                <input type="text" id="editItemFromManageName" class="form-control" style="direction: rtl;">
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold">واحد جدید اندازه‌گیری:</label>
+                <input type="text" id="editItemFromManageUnit" class="form-control" style="direction: rtl;">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary px-4" onclick="closeModal('editItemFromManageModal')">انصراف</button>
+                <button type="button" class="btn btn-official px-4" id="editItemFromManageBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Edit Dept Modal -->
+<div class="custom-modal" id="editDeptFromManageModal">
+    <div class="custom-modal-content" style="max-width: 450px;">
+        <div class="custom-modal-header">
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">ویرایش بخش متقاضی</h6>
+            <button class="custom-modal-close" onclick="closeModal('editDeptFromManageModal')" type="button">✕</button>
+        </div>
+        <div class="custom-modal-body text-end" style="direction: rtl;">
+            <div class="mb-4">
+                <label class="form-label fw-bold">نام جدید بخش:</label>
+                <input type="text" id="editDeptFromManageName" class="form-control" style="direction: rtl;">
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary px-4" onclick="closeModal('editDeptFromManageModal')">انصراف</button>
+                <button type="button" class="btn btn-official px-4" id="editDeptFromManageBtn">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="d-none" id="printContainer">
 <div class="print-header-clean text-center">
 <h3 class="print-main-title">مجتمع خیریه و درمانی حضرت امام هادی(ع)</h3>

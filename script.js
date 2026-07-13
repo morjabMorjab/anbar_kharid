@@ -600,8 +600,7 @@ function prepareAndPrint(req, unpurchasedOnly) {
         showToast("error", "هیچ قلمی برای پرینت وجود ندارد.");
         return;
     }
-    window.focus();
-    window.print();
+    triggerPrint();
 }
 
 function printAllUnpurchasedItems() {
@@ -664,8 +663,7 @@ function printAllUnpurchasedItems() {
         return;
     }
     
-    window.focus();
-    window.print();
+    triggerPrint();
 }
 
 function editDocument(id) {
@@ -721,29 +719,28 @@ function editDocument(id) {
 }
 
 function deleteDocument(id) {
-    if (!confirm("آیا از حذف کامل سند شماره " + id + " و تمام اقلام آن مطمئن هستید؟ این عملیات غیر قابل بازگشت است.")) {
-        return;
-    }
-    const fd = new FormData();
-    fd.append('request_id', id);
-    
-    fetch('api.php?action=delete_request', { method: 'POST', body: fd })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast('success', data.message);
-                if (typeof cancelEditing === 'function' && editingRequestId === id) {
-                    cancelEditing();
+    showConfirm("آیا از حذف کامل سند شماره " + id + " و تمام اقلام آن مطمئن هستید؟ این عملیات غیر قابل بازگشت است.", () => {
+        const fd = new FormData();
+        fd.append('request_id', id);
+        
+        fetch('api.php?action=delete_request', { method: 'POST', body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    if (typeof cancelEditing === 'function' && editingRequestId === id) {
+                        cancelEditing();
+                    }
+                    fetchRequests();
+                } else {
+                    showToast('error', data.message);
                 }
-                fetchRequests();
-            } else {
-                showToast('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('خطا:', error);
-            showToast('error', 'خطا در ارتباط با سرور رخ داده است.');
-        });
+            })
+            .catch(error => {
+                console.error('خطا:', error);
+                showToast('error', 'خطا در ارتباط با سرور رخ داده است.');
+            });
+    });
 }
 
 function escapeHtml(text) {
@@ -757,6 +754,35 @@ function openModal(id) {
 
 function closeModal(id) {
     document.getElementById(id).style.display = 'none';
+}
+
+function showConfirm(message, onConfirm) {
+    document.getElementById('customConfirmMessage').innerText = message;
+    const confirmBtn = document.getElementById('customConfirmBtn');
+    
+    // Clear previous event listeners by cloning the button
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    newConfirmBtn.addEventListener('click', () => {
+        closeModal('customConfirmModal');
+        onConfirm();
+    });
+    
+    openModal('customConfirmModal');
+}
+
+function triggerPrint() {
+    if (window.self !== window.top) {
+        showToast("info", "توجه: به دلیل محدودیت‌های امنیتی مرورگر در حالت پیش‌نمایش، لطفاً ابتدا با کلیک روی نماد بالا سمت راست برنامه را در تب جدید (New Tab) باز کرده و سپس اقدام به چاپ نمایید.");
+    }
+    try {
+        window.focus();
+        window.print();
+    } catch (e) {
+        console.error("Print blocked:", e);
+        showToast("error", "امکان پرینت مستقیم در پیش‌نمایش به دلیل محدودیت مرورگر وجود ندارد. لطفاً برنامه را در تب جدید باز کنید.");
+    }
 }
 
 function showToast(type, message) {
@@ -808,107 +834,160 @@ function editItemFromManage(id) {
     const item = cachedItems.find(i => i.id == id);
     if (!item) return;
     
-    const newName = prompt("نام جدید کالا را وارد کنید:", item.name);
-    if (!newName || newName.trim() === "") return;
+    const nameInput = document.getElementById("editItemFromManageName");
+    const unitInput = document.getElementById("editItemFromManageUnit");
     
-    const newUnit = prompt("واحد جدید اندازه گیری را وارد کنید:", item.unit);
-    if (!newUnit || newUnit.trim() === "") return;
+    nameInput.value = item.name;
+    unitInput.value = item.unit;
     
-    const fd = new FormData();
-    fd.append("id", id);
-    fd.append("name", newName.trim());
-    fd.append("unit", newUnit.trim());
+    const saveBtn = document.getElementById("editItemFromManageBtn");
     
-    fetch("api.php?action=edit_item", { method: "POST", body: fd })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast("success", data.message);
-                item.name = newName.trim();
-                item.unit = newUnit.trim();
-                updateAllItemDropdowns();
-                openManageItemsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
-            } else {
-                showToast("error", data.message);
-            }
-        });
+    // Clear previous event listeners by cloning the button
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    
+    newSaveBtn.addEventListener("click", () => {
+        const newName = nameInput.value.trim();
+        const newUnit = unitInput.value.trim();
+        
+        if (!newName) {
+            showToast("error", "نام کالا نمی‌تواند خالی باشد.");
+            return;
+        }
+        if (!newUnit) {
+            showToast("error", "واحد اندازه‌گیری نمی‌تواند خالی باشد.");
+            return;
+        }
+        
+        const fd = new FormData();
+        fd.append("id", id);
+        fd.append("name", newName);
+        fd.append("unit", newUnit);
+        
+        fetch("api.php?action=edit_item", { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("success", data.message);
+                    item.name = newName;
+                    item.unit = newUnit;
+                    updateAllItemDropdowns();
+                    closeModal("editItemFromManageModal");
+                    openManageItemsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
+                } else {
+                    showToast("error", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("خطا:", error);
+                showToast("error", "خطا در ارتباط با سرور رخ داده است.");
+            });
+    });
+    
+    openModal("editItemFromManageModal");
 }
 
 function deleteItemFromManage(id) {
     const item = cachedItems.find(i => i.id == id);
     if (!item) return;
     
-    if (!confirm(`آیا از حذف کامل کالا "${item.name}" از کل سیستم مطمئن هستید؟`)) {
-        return;
-    }
-    
-    const fd = new FormData();
-    fd.append("id", id);
-    
-    fetch("api.php?action=delete_item", { method: "POST", body: fd })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast("success", data.message);
-                cachedItems = cachedItems.filter(i => i.id != id);
-                updateAllItemDropdowns();
-                openManageItemsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
-            } else {
-                showToast("error", data.message);
-            }
-        });
+    showConfirm(`آیا از حذف کامل کالا "${item.name}" از کل سیستم مطمئن هستید؟`, () => {
+        const fd = new FormData();
+        fd.append("id", id);
+        
+        fetch("api.php?action=delete_item", { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("success", data.message);
+                    cachedItems = cachedItems.filter(i => i.id != id);
+                    updateAllItemDropdowns();
+                    openManageItemsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
+                } else {
+                    showToast("error", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("خطا:", error);
+                showToast("error", "خطا در ارتباط با سرور رخ داده است.");
+            });
+    });
 }
 
 function editDeptFromManage(id) {
     const dept = cachedDepts.find(d => d.id == id);
     if (!dept) return;
     
-    const newName = prompt("نام جدید بخش را وارد کنید:", dept.name);
-    if (!newName || newName.trim() === "") return;
+    const nameInput = document.getElementById("editDeptFromManageName");
+    nameInput.value = dept.name;
     
-    const fd = new FormData();
-    fd.append("id", id);
-    fd.append("name", newName.trim());
+    const saveBtn = document.getElementById("editDeptFromManageBtn");
     
-    fetch("api.php?action=edit_department", { method: "POST", body: fd })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast("success", data.message);
-                dept.name = newName.trim();
-                updateAllDeptDropdowns();
-                populateDeptFilter();
-                openManageDeptsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
-            } else {
-                showToast("error", data.message);
-            }
-        });
+    // Clear previous event listeners by cloning the button
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    
+    newSaveBtn.addEventListener("click", () => {
+        const newName = nameInput.value.trim();
+        
+        if (!newName) {
+            showToast("error", "نام بخش نمی‌تواند خالی باشد.");
+            return;
+        }
+        
+        const fd = new FormData();
+        fd.append("id", id);
+        fd.append("name", newName);
+        
+        fetch("api.php?action=edit_department", { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("success", data.message);
+                    dept.name = newName;
+                    updateAllDeptDropdowns();
+                    populateDeptFilter();
+                    closeModal("editDeptFromManageModal");
+                    openManageDeptsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
+                } else {
+                    showToast("error", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("خطا:", error);
+                showToast("error", "خطا در ارتباط با سرور رخ داده است.");
+            });
+    });
+    
+    openModal("editDeptFromManageModal");
 }
 
 function deleteDeptFromManage(id) {
     const dept = cachedDepts.find(d => d.id == id);
     if (!dept) return;
     
-    if (!confirm(`آیا از حذف کامل بخش متقاضی "${dept.name}" از کل سیستم مطمئن هستید؟`)) {
-        return;
-    }
-    
-    const fd = new FormData();
-    fd.append("id", id);
-    
-    fetch("api.php?action=delete_department", { method: "POST", body: fd })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast("success", data.message);
-                cachedDepts = cachedDepts.filter(d => d.id != id);
-                updateAllDeptDropdowns();
-                populateDeptFilter();
-                openManageDeptsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
-            } else {
-                showToast("error", data.message);
-            }
-        });
+    showConfirm(`آیا از حذف کامل بخش متقاضی "${dept.name}" از کل سیستم مطمئن هستید؟`, () => {
+        const fd = new FormData();
+        fd.append("id", id);
+        
+        fetch("api.php?action=delete_department", { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast("success", data.message);
+                    cachedDepts = cachedDepts.filter(d => d.id != id);
+                    updateAllDeptDropdowns();
+                    populateDeptFilter();
+                    openManageDeptsModal(); // بارگذاری مجدد لیست در پاپ‌آپ
+                } else {
+                    showToast("error", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("خطا:", error);
+                showToast("error", "خطا در ارتباط با سرور رخ داده است.");
+            });
+    });
 }
 
 // Expose functions globally to ensure they are fully accessible regardless of load conditions
@@ -935,5 +1014,7 @@ window.saveNewDept = saveNewDept;
 window.showToast = showToast;
 window.closeModal = closeModal;
 window.openModal = openModal;
+window.showConfirm = showConfirm;
+window.triggerPrint = triggerPrint;
 window.filterRequestsList = filterRequestsList;
 
