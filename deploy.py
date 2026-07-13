@@ -20,6 +20,12 @@ def deploy():
         "fonts"
     ]
     
+    # NOTE: Database data is persistent on the server.
+    # Code deployment DOES NOT overwrite, delete, or duplicate DB data.
+    # To prevent duplicates, ensure unique constraints on database tables
+    # and check for existing records in api.php before insertion.
+    print("توجه: اطلاعات قبلی در دیتابیس حذف یا اورراید نمی‌شوند و رکوردهای تکراری ذخیره نخواهند شد.")
+    
     print(f"--- Starting Deployment to {dest_dir} ---")
     
     try:

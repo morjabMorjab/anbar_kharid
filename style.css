@@ -631,13 +631,36 @@ header {
     color: var(--primary);
 }
 
-/* Badges */
-.badge {
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: bold;
+
+/* Sidebar Background Color Fix */
+.sidebar .searchable-select-btn {
+    background-color: #334155 !important;
+    border: 1px solid #475569 !important;
+    color: #fff !important;
 }
+.sidebar .searchable-select-btn::after {
+    color: #94a3b8 !important;
+}
+.sidebar .searchable-select-menu {
+    background-color: #334155 !important;
+    border: 1px solid #475569 !important;
+}
+.sidebar .searchable-option {
+    color: #fff !important;
+    border-bottom: 1px solid #475569 !important;
+}
+.sidebar .searchable-option:hover {
+    background-color: #475569 !important;
+}
+.sidebar .searchable-input {
+    background-color: #1e293b !important;
+    border-bottom: 1px solid #475569 !important;
+    color: #fff !important;
+}
+.sidebar .searchable-input::placeholder {
+    color: #94a3b8 !important;
+}
+
 .badge-completed { background: #dcfce7; color: #166534; }
 .badge-partial { background: #fef9c3; color: #854d0e; }
 .badge-pending { background: #f1f5f9; color: #475569; }
@@ -656,49 +679,50 @@ header {
     border-collapse: collapse;
     margin-top: 15px;
 }
+
 .print-table th, .print-table td {
-    border: 1px solid #000000 !important;
-    padding: 6px 10px !important; /* Exactly 10px right & left padding */
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    border: 1px solid #cbd5e1;
+    text-align: right;
+}
+
+.print-header {
     text-align: center;
-    font-size: 12px;
-}
-.print-table th {
-    background-color: #e5e5e5 !important;
-    font-family: 'BTitr', sans-serif !important;
-    font-size: 12px !important;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-/* Print Columns Sizing */
-.print-col-shrink {
-    width: 1% !important;
-    white-space: nowrap !important;
-}
-.print-col-grow {
-    width: auto !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    text-align: right !important; /* Right aligned for beautiful RTL description text */
+.print-header h2 {
+    font-family: 'BTitr', sans-serif;
+    color: var(--primary);
+    margin-bottom: 10px;
 }
 
-/* Modal Search List Item Styles */
+.print-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #475569;
+}
+
+/* Modal Search Row Styles */
 .modal-search-item-row {
     padding: 12px 18px;
-    cursor: pointer;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
-    font-family: 'BNazanin', sans-serif;
-    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background-color 0.15s, color 0.15s;
-    user-select: none;
+    font-size: 14px;
 }
 .modal-search-item-row:last-child {
     border-bottom: none;
 }
 .modal-search-item-row:hover {
-    background-color: #f0fdfa !important;
+    background-color: #f8fafc;
     color: var(--primary) !important;
 }
 .modal-search-item-row.selected {
@@ -712,4 +736,3 @@ header {
 .d-none {
     display: none !important;
 }
-

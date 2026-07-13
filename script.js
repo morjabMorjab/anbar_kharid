@@ -596,7 +596,6 @@ function prepareAndPrint(req, unpurchasedOnly) {
             <th class="print-col-shrink">بخش متقاضی</th>
             <th class="print-col-shrink">تعداد کسری</th>
             <th class="print-col-shrink">واحد</th>
-            <th class="print-col-grow">توضیحات</th>
         `;
     } else {
         printTableHead.innerHTML = `
@@ -624,8 +623,7 @@ function prepareAndPrint(req, unpurchasedOnly) {
                 '<td class="print-col-shrink"><strong>' + escapeHtml(item.item_name) + '</strong></td>' +
                 '<td class="print-col-shrink">' + escapeHtml(item.department_name) + '</td>' +
                 '<td class="print-col-shrink">' + toPersianDigits(displayQty) + '</td>' +
-                '<td class="print-col-shrink">' + escapeHtml(item.item_unit) + '</td>' +
-                '<td class="print-col-grow">' + (escapeHtml(item.description) || "-") + '</td>';
+                '<td class="print-col-shrink">' + escapeHtml(item.item_unit) + '</td>';
         } else {
             tr.innerHTML = '<td class="print-col-shrink">' + toPersianDigits(indexCounter++) + '</td>' +
                 '<td class="print-col-shrink"><strong>' + escapeHtml(item.item_name) + '</strong></td>' +
