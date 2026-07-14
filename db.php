@@ -1,7 +1,7 @@
 <?php
 // Database connection configuration
 $host = 'localhost';
-$db   = 'anbar_kharid';
+$db   = 'purchase_db';
 $user = 'root';
 $pass = '';
 $charset = 'utf8mb4';

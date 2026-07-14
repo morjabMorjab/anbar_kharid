@@ -48,10 +48,10 @@ echo.
 where mysql >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     echo در حال ایجاد دیتابیس در صورت عدم وجود...
-    mysql -u root -e "CREATE DATABASE IF NOT EXISTS anbar_kharid CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
     
     echo در حال ایمپورت کردن ساختار جدول‌ها و داده‌های اولیه...
-    mysql -u root anbar_kharid < "%SOURCE_DIR%schema.sql"
+    mysql -u root purchase_db < "%SOURCE_DIR%schema.sql"
     echo اسکیما با موفقیت روی دیتابیس MySQL محلی اجرا شد.
 ) else (
     echo [توجه] ابزار mysql در خط فرمان (PATH) ویندوز شما تعریف نشده است.
