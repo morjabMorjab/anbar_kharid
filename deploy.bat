@@ -5,6 +5,9 @@ cd /d "%~dp0"
 :: فعال‌سازی یونیکد (UTF-8) برای نمایش درست متون فارسی در خط فرمان ویندوز
 chcp 65001 >nul
 
+:: فعال‌سازی Delayed Expansion برای حل مشکل بررسی متغیرها در حلقه‌ها و شرط‌ها
+setlocal enabledelayedexpansion
+
 echo =======================================================
 echo     عملیات دیپلوی پروژه به سرور محلی WAMP (ویندوز)
 echo =======================================================
@@ -44,46 +47,80 @@ if exist "%SOURCE_DIR%fonts" (
 echo.
 
 echo [3/3] پیکربندی و راه‌اندازی دیتابیس MySQL محلی...
-:: بررسی وجود دستور mysql در سیستم
+
+:: یافتن مسیر صحیح برای اجرای دستورات mysql و mysqldump
+set "MYSQL_CMD="
+set "MYSQLDUMP_CMD="
+
+:: ابتدا بررسی در PATH سیستم
 where mysql >nul 2>nul
-if %ERRORLEVEL% equ 0 (
+if !ERRORLEVEL! equ 0 (
+    set "MYSQL_CMD=mysql"
+    set "MYSQLDUMP_CMD=mysqldump"
+) else (
+    echo [جستجو] ابزار mysql در PATH سیستم تعریف نشده است.
+    echo در حال جستجو در پوشه‌های پیش‌فرض WampServer...
     
-    :: بررسی اینکه آیا دیتابیس قدیمی anbar_kharid وجود دارد تا اطلاعاتش را منتقل کنیم
-    mysql -u root -e "USE anbar_kharid;" 2>nul
-    if %ERRORLEVEL% equ 0 (
+    :: جستجو در WampServer 64 بیتی
+    for /d %%d in (C:\wamp64\bin\mysql\mysql*) do (
+        if exist "%%d\bin\mysql.exe" (
+            set "MYSQL_CMD="%%d\bin\mysql.exe""
+            set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
+        )
+    )
+    
+    :: جستجو در WampServer 32 بیتی (در صورت عدم یافتن نسخه 64 بیتی)
+    if not defined MYSQL_CMD (
+        for /d %%d in (C:\wamp\bin\mysql\mysql*) do (
+            if exist "%%d\bin\mysql.exe" (
+                set "MYSQL_CMD="%%d\bin\mysql.exe""
+                set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
+            )
+        )
+    )
+)
+
+if defined MYSQL_CMD (
+    echo مسیر ابزار MySQL پیدا شد: !MYSQL_CMD!
+    echo.
+    
+    :: بررسی وجود دیتابیس قدیمی anbar_kharid برای انتقال ایمن اطلاعات
+    !MYSQL_CMD! -u root -e "USE anbar_kharid;" 2>nul
+    if !ERRORLEVEL! equ 0 (
         echo [انتقال اطلاعات] دیتابیس قدیمی 'anbar_kharid' شناسایی شد.
-        echo در حال انتقال ایمن اطلاعات قبلی شما به دیتابیس جدید 'purchase_db' ...
+        echo در حال انتقال ایمن اطلاعات قبلی به دیتابیس جدید 'purchase_db' ...
         
         :: ایجاد دیتابیس جدید در صورت عدم وجود
-        mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        !MYSQL_CMD! -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
         
-        :: گرفتن بکاپ از دیتابیس قدیمی و ایمپورت در جدید
-        mysqldump -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
+        :: تلاش برای بکاپ‌گیری و انتقال اطلاعات با mysqldump
+        !MYSQLDUMP_CMD! -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
         if exist "%TEMP%\anbar_backup.sql" (
-            mysql -u root purchase_db < "%TEMP%\anbar_backup.sql"
-            echo [موفقیت] تمام کالاها، بخش‌ها و اسناد خرید قبلی با موفقیت منتقل شدند!
+            !MYSQL_CMD! -u root purchase_db < "%TEMP%\anbar_backup.sql"
+            echo [موفقیت] تمام کالاها، بخش‌ها و اسناد خرید قبلی با موفقیت به دیتابیس جدید منتقل شدند!
             del "%TEMP%\anbar_backup.sql"
         ) else (
-            echo [خطا] امکان بکاپ‌گیری خودکار نبود. جدول‌ها را به صورت دستی کپی می‌کنیم...
-            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.items SELECT * FROM anbar_kharid.items;" 2>nul
-            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.departments SELECT * FROM anbar_kharid.departments;" 2>nul
-            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_requests SELECT * FROM anbar_kharid.purchase_requests;" 2>nul
-            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_request_items SELECT * FROM anbar_kharid.purchase_request_items;" 2>nul
-            echo [موفقیت] جدول‌های اطلاعاتی کپی شدند.
+            echo [توجه] امکان بکاپ‌گیری خودکار نبود. جدول‌ها را به صورت مستقیم کپی می‌کنیم...
+            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.items SELECT * FROM anbar_kharid.items;" 2>nul
+            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.departments SELECT * FROM anbar_kharid.departments;" 2>nul
+            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_requests SELECT * FROM anbar_kharid.purchase_requests;" 2>nul
+            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_request_items SELECT * FROM anbar_kharid.purchase_request_items;" 2>nul
+            echo [موفقیت] کپی مستقیم جدول‌ها انجام شد.
         )
     ) else (
-        echo دیتابیس قدیمی یافت نشد. در حال ایجاد دیتابیس جدید در صورت عدم وجود...
-        mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        echo دیتابیس قدیمی یافت نشد یا از قبل منتقل شده است.
+        echo در حال ایجاد دیتابیس 'purchase_db' در صورت عدم وجود...
+        !MYSQL_CMD! -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
     )
     
     echo.
-    echo در حال اجرای کدهای ساختار اولیه و داده‌های پیش‌فرض (بدون حذف داده‌های قبلی)...
-    mysql -u root purchase_db < "%SOURCE_DIR%schema.sql"
-    echo اسکیما با موفقیت بررسی و اعمال شد.
+    echo در حال اجرای ساختار اولیه و داده‌های پیش‌فرض روی 'purchase_db' ...
+    !MYSQL_CMD! -u root purchase_db < "%SOURCE_DIR%schema.sql"
+    echo اسکیما و داده‌های پایه با موفقیت بررسی و اعمال شدند.
 ) else (
-    echo [توجه] ابزار mysql در خط فرمان (PATH) ویندوز شما تعریف نشده است.
-    echo لطفاً مطمئن شوید WampServer شما روشن است.
-    echo در صورتی که دیتابیس خودکار آپدیت نشد، می‌توانید فایل schema.sql را به صورت دستی در phpMyAdmin ایمپورت کنید.
+    echo [خطا] ابزار mysql پیدا نشد!
+    echo لطفاً مطمئن شوید WampServer شما روشن است و در مسیر استاندارد (C:\wamp64) نصب شده است.
+    echo شما می‌توانید فایل schema.sql را به صورت دستی در phpMyAdmin ایمپورت کنید.
 )
 
 echo.
