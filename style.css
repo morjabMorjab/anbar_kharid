@@ -740,3 +740,23 @@ header {
 .d-none {
     display: none !important;
 }
+
+/* Remove border around input fields and select buttons in the main page */
+.main-content .form-control,
+.main-content .form-select,
+.main-content .form-control-excel,
+.main-content .form-select-excel,
+.main-content .searchable-select-btn {
+    border: none !important;
+    border-width: 0 !important;
+}
+
+/* Remove spin buttons (arrows) from number inputs in the main page */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}

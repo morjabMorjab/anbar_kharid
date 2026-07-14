@@ -1219,9 +1219,9 @@ function makeModalSearchable(select, type, placeholder) {
     function syncValue() {
         const selectedOpt = select.options[select.selectedIndex];
         if (selectedOpt && selectedOpt.value && selectedOpt.value !== 'ADD_NEW') {
-            btn.innerHTML = `<span style="flex-grow: 1; text-align: center; color: var(--text-main);">${escapeHtml(selectedOpt.textContent)}</span><span style="color: var(--primary); font-size: 13px; margin-right: 8px;">🔍</span>`;
+            btn.innerHTML = `<span style="flex-grow: 1; text-align: center; color: var(--text-main);">${escapeHtml(selectedOpt.textContent)}</span>`;
         } else {
-            btn.innerHTML = `<span style="flex-grow: 1; text-align: center; color: var(--text-muted); font-weight: normal;">${escapeHtml(placeholder)}</span><span style="color: var(--primary); font-size: 13px; margin-right: 8px;">🔍</span>`;
+            btn.innerHTML = `<span style="flex-grow: 1; text-align: center; color: var(--text-muted); font-weight: normal;">${escapeHtml(placeholder)}</span>`;
         }
     }
 

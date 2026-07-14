@@ -63,11 +63,17 @@
                 padding-right: 7px !important; /* پدینگ راست ۷ پیکسل */
                 padding-top: 5px !important;
                 padding-bottom: 5px !important;
-                font-size: 11px !important;
+                font-size: 14px !important;
+                font-family: 'BNazanin', sans-serif !important;
+                font-weight: bold !important;
                 text-align: center !important;
                 vertical-align: middle !important;
                 border: 1px solid #333 !important; /* خطوط مرزی جدول */
                 white-space: nowrap !important;
+            }
+            .print-table th {
+                font-family: 'BTitr', sans-serif !important;
+                font-weight: bold !important;
             }
             /* پدینگ متمایز ستون توضیحات (ستون آخر) با تراز کاملاً وسط‌چین شده */
             .print-table th:last-child, .print-table td:last-child {
@@ -76,7 +82,9 @@
                 padding-right: 15px !important;
                 padding-top: 5px !important;
                 padding-bottom: 5px !important;
-                font-size: 11px !important;
+                font-size: 14px !important;
+                font-family: 'BNazanin', sans-serif !important;
+                font-weight: bold !important;
                 text-align: center !important; /* وسط‌چین کردن هم سرستون و هم محتوای داخل سلول‌های توضیحات */
                 vertical-align: middle !important;
                 border: 1px solid #333 !important;
@@ -426,7 +434,7 @@
 <div class="custom-modal" id="searchItemModal">
     <div class="custom-modal-content" style="max-width: 500px;">
         <div class="custom-modal-header" style="border-bottom: none; margin-bottom: 12px; padding-bottom: 0;">
-            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">🔍 جستجو و انتخاب کالا</h6>
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">جستجو و انتخاب کالا</h6>
             <button class="custom-modal-close" onclick="closeModal('searchItemModal')" type="button">✕</button>
         </div>
         <div class="custom-modal-body" style="direction: rtl; text-align: right;">
@@ -448,7 +456,7 @@
 <div class="custom-modal" id="searchDeptModal">
     <div class="custom-modal-content" style="max-width: 500px;">
         <div class="custom-modal-header" style="border-bottom: none; margin-bottom: 12px; padding-bottom: 0;">
-            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">🔍 جستجو و انتخاب بخش متقاضی</h6>
+            <h6 class="custom-modal-title" style="font-family: 'BTitr', sans-serif;">جستجو و انتخاب بخش متقاضی</h6>
             <button class="custom-modal-close" onclick="closeModal('searchDeptModal')" type="button">✕</button>
         </div>
         <div class="custom-modal-body" style="direction: rtl; text-align: right;">
@@ -470,12 +478,12 @@
 <div class="print-header-clean text-center" style="margin: 0; padding: 0;">
 <h3 class="print-main-title" style="margin: 0; padding: 0; font-family: 'BTitr', sans-serif; font-size: 16px; font-weight: bold;">مجتمع خیریه و درمانی حضرت امام هادی(ع)</h3>
 <p class="print-sub-title" style="margin: 10px 0 0 0; padding: 0; font-family: 'BTitr', sans-serif; font-size: 14px; font-weight: bold; color: #1e293b;">برگه خرید کسریهای درخواست خرید</p>
-<div class="print-meta-row" style="display: flex; justify-content: center; gap: 147px; margin-top: 40px !important; margin-bottom: 30px !important; font-size: 14px; font-weight: bold; direction: rtl;">
+<div class="print-meta-row" style="display: flex; justify-content: center; gap: 147px; margin-top: 20px !important; margin-bottom: 20px !important; font-size: 14px; font-weight: bold; direction: rtl;">
     <span>ش.درخواست: <span id="p-req-id"></span></span>
     <span>تاریخ درخواست: <span id="p-req-date" style="margin-right: 5px; display: inline-block;"></span></span>
 </div>
 </div>
-<div class="print-body mt-4">
+<div class="print-body" style="margin-top: 0 !important;">
 <table class="print-table">
 <thead>
 <tr>
