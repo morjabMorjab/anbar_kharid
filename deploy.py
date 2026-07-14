@@ -4,11 +4,16 @@ import sys
 import subprocess
 
 def deploy():
-    # مسیر مبدا (پروژه فعلی)
-    source_dir = os.getcwd()
+    # مسیر مبدا (پوشه‌ای که فایل اسکریپت در آن قرار دارد)
+    source_dir = os.path.dirname(os.path.abspath(__file__))
     
     # مسیر مقصد (WAMP)
     dest_dir = r"C:\wamp64\www\anbar_kharid"
+    
+    # مقایسه مسیر مبدا و مقصد برای جلوگیری از کپی فایل‌ها روی خودشان (علت اصلی خطای WinError 32)
+    real_source = os.path.realpath(source_dir).lower()
+    real_dest = os.path.realpath(dest_dir).lower()
+    is_same_dir = (real_source == real_dest)
     
     # فایل‌ها و پوشه‌هایی که باید کپی شوند
     files_to_copy = [
@@ -30,26 +35,29 @@ def deploy():
     print(f"--- Starting Deployment to {dest_dir} ---")
     
     try:
-        # ایجاد پوشه مقصد اگر وجود نداشته باشد
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-            print(f"Created directory: {dest_dir}")
-            
-        for item in files_to_copy:
-            src_path = os.path.join(source_dir, item)
-            dest_path = os.path.join(dest_dir, item)
-            
-            if os.path.exists(src_path):
-                if os.path.isdir(src_path):
-                    if os.path.exists(dest_path):
-                        shutil.rmtree(dest_path)
-                    shutil.copytree(src_path, dest_path)
-                    print(f"Copied directory: {item}")
+        if is_same_dir:
+            print("[توجه] پوشه مبدا و مقصد یکسان هستند. کپی فایل‌ها رد شد تا از خطای قفل شدن فایل (WinError 32) جلوگیری شود.")
+        else:
+            # ایجاد پوشه مقصد اگر وجود نداشته باشد
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+                print(f"Created directory: {dest_dir}")
+                
+            for item in files_to_copy:
+                src_path = os.path.join(source_dir, item)
+                dest_path = os.path.join(dest_dir, item)
+                
+                if os.path.exists(src_path):
+                    if os.path.isdir(src_path):
+                        if os.path.exists(dest_path):
+                            shutil.rmtree(dest_path)
+                        shutil.copytree(src_path, dest_path)
+                        print(f"Copied directory: {item}")
+                    else:
+                        shutil.copy2(src_path, dest_path)
+                        print(f"Copied file: {item}")
                 else:
-                    shutil.copy2(src_path, dest_path)
-                    print(f"Copied file: {item}")
-            else:
-                print(f"Warning: {item} not found in source directory.")
+                    print(f"Warning: {item} not found in source directory.")
                 
         # اجرای فایل schema.sql روی دیتابیس لوکال
         print("\n--- Executing schema.sql on local MySQL server ---")

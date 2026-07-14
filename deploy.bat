@@ -1,35 +1,29 @@
 @echo off
-:: تغییر مسیر فعال به پوشه جاری فایل بت (بسیار مهم برای زمانی که Run as Admin می‌شود)
+:: Change directory to the folder where this batch file is located
 cd /d "%~dp0"
 
-:: فعال‌سازی یونیکد (UTF-8) برای نمایش درست متون فارسی در خط فرمان ویندوز
-chcp 65001 >nul
-
-:: فعال‌سازی Delayed Expansion برای حل مشکل بررسی متغیرها در حلقه‌ها و شرط‌ها
-setlocal enabledelayedexpansion
-
 echo =======================================================
-echo     عملیات دیپلوی پروژه به سرور محلی WAMP (ویندوز)
+echo     Deploying Project to Local WAMP Server (Windows)
 echo =======================================================
 echo.
 
-:: مسیر مبدا (پوشه فعلی که فایل bat در آن قرار دارد)
+:: Source directory (current folder)
 set "SOURCE_DIR=%~dp0"
 
-:: مسیر مقصد در پوشه WAMP
+:: Destination directory in WAMP www folder
 set "DEST_DIR=C:\wamp64\www\anbar_kharid"
 
-echo [1/3] ایجاد پوشه مقصد در صورت عدم وجود...
+echo [1/3] Creating destination folder if not exists...
 if not exist "%DEST_DIR%" (
     mkdir "%DEST_DIR%"
-    echo پوشه مقصد ایجاد شد: %DEST_DIR%
+    echo Created folder: %DEST_DIR%
 ) else (
-    echo پوشه مقصد از قبل وجود دارد.
+    echo Destination folder already exists.
 )
 echo.
 
-echo [2/3] کپی کردن فایل‌ها و پوشه فونت...
-:: کپی فایل‌های اصلی با اطمینان از اورراید شدن
+echo [2/3] Copying files and fonts...
+:: Copy core files
 copy /Y "%SOURCE_DIR%index.html" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%style.css" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%script.js" "%DEST_DIR%\"
@@ -37,97 +31,105 @@ copy /Y "%SOURCE_DIR%api.php" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%db.php" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%schema.sql" "%DEST_DIR%\"
 
-:: کپی پوشه فونت به صورت کامل و زیرپوشه‌ها
+:: Copy fonts folder if exists
 if exist "%SOURCE_DIR%fonts" (
     xcopy "%SOURCE_DIR%fonts" "%DEST_DIR%\fonts" /E /I /Y /Q >nul
-    echo پوشه فونت‌ها با موفقیت کپی شد.
+    echo Fonts copied successfully.
 ) else (
-    echo هشدار: پوشه fonts یافت نشد!
+    echo Warning: fonts directory not found!
 )
 echo.
 
-echo [3/3] پیکربندی و راه‌اندازی دیتابیس MySQL محلی...
+echo [3/3] Configuring local MySQL database...
 
-:: یافتن مسیر صحیح برای اجرای دستورات mysql و mysqldump
+:: Find path to mysql and mysqldump tools
 set "MYSQL_CMD="
 set "MYSQLDUMP_CMD="
 
-:: ابتدا بررسی در PATH سیستم
+:: First check if mysql is in system PATH
 where mysql >nul 2>nul
-if !ERRORLEVEL! equ 0 (
+if %ERRORLEVEL% equ 0 (
     set "MYSQL_CMD=mysql"
     set "MYSQLDUMP_CMD=mysqldump"
-) else (
-    echo [جستجو] ابزار mysql در PATH سیستم تعریف نشده است.
-    echo در حال جستجو در پوشه‌های پیش‌فرض WampServer...
-    
-    rem جستجو در WampServer 64 بیتی
-    for /d %%d in (C:\wamp64\bin\mysql\mysql*) do (
-        if exist "%%d\bin\mysql.exe" (
-            set "MYSQL_CMD="%%d\bin\mysql.exe""
-            set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
-        )
-    )
-    
-    rem جستجو در WampServer 32 بیتی (در صورت عدم یافتن نسخه 64 بیتی)
-    if not defined MYSQL_CMD (
-        for /d %%d in (C:\wamp\bin\mysql\mysql*) do (
-            if exist "%%d\bin\mysql.exe" (
-                set "MYSQL_CMD="%%d\bin\mysql.exe""
-                set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
-            )
-        )
+    goto :MYSQL_FOUND
+)
+
+echo [Search] mysql is not in system PATH. Searching in default WampServer folders...
+
+:: Search in 64-bit WampServer
+for /d %%d in (C:\wamp64\bin\mysql\mysql*) do (
+    if exist "%%d\bin\mysql.exe" (
+        set "MYSQL_CMD="%%d\bin\mysql.exe""
+        set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
     )
 )
 
-if defined MYSQL_CMD (
-    echo مسیر ابزار MySQL پیدا شد: !MYSQL_CMD!
-    echo.
-    
-    rem بررسی وجود دیتابیس قدیمی anbar_kharid برای انتقال ایمن اطلاعات
-    !MYSQL_CMD! -u root -e "USE anbar_kharid;" 2>nul
-    if !ERRORLEVEL! equ 0 (
-        echo [انتقال اطلاعات] دیتابیس قدیمی 'anbar_kharid' شناسایی شد.
-        echo در حال انتقال ایمن اطلاعات قبلی به دیتابیس جدید 'purchase_db' ...
-        
-        rem ایجاد دیتابیس جدید در صورت عدم وجود
-        !MYSQL_CMD! -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-        
-        rem تلاش برای بکاپ‌گیری و انتقال اطلاعات با mysqldump
-        !MYSQLDUMP_CMD! -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
-        if exist "%TEMP%\anbar_backup.sql" (
-            !MYSQL_CMD! -u root purchase_db < "%TEMP%\anbar_backup.sql"
-            echo [موفقیت] تمام کالاها، بخش‌ها و اسناد خرید قبلی با موفقیت به دیتابیس جدید منتقل شدند!
-            del "%TEMP%\anbar_backup.sql"
-        ) else (
-            echo [توجه] امکان بکاپ‌گیری خودکار نبود. جدول‌ها را به صورت مستقیم کپی می‌کنیم...
-            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.items SELECT * FROM anbar_kharid.items;" 2>nul
-            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.departments SELECT * FROM anbar_kharid.departments;" 2>nul
-            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_requests SELECT * FROM anbar_kharid.purchase_requests;" 2>nul
-            !MYSQL_CMD! -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_request_items SELECT * FROM anbar_kharid.purchase_request_items;" 2>nul
-            echo [موفقیت] کپی مستقیم جدول‌ها انجام شد.
-        )
-    ) else (
-        echo دیتابیس قدیمی یافت نشد یا از قبل منتقل شده است.
-        echo در حال ایجاد دیتابیس 'purchase_db' در صورت عدم وجود...
-        !MYSQL_CMD! -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+if defined MYSQL_CMD goto :MYSQL_FOUND
+
+:: Search in 32-bit WampServer
+for /d %%d in (C:\wamp\bin\mysql\mysql*) do (
+    if exist "%%d\bin\mysql.exe" (
+        set "MYSQL_CMD="%%d\bin\mysql.exe""
+        set "MYSQLDUMP_CMD="%%d\bin\mysqldump.exe""
     )
-    
-    echo.
-    echo در حال اجرای ساختار اولیه و داده‌های پیش‌فرض روی 'purchase_db' ...
-    !MYSQL_CMD! -u root purchase_db < "%SOURCE_DIR%schema.sql"
-    echo اسکیما و داده‌های پایه با موفقیت بررسی و اعمال شدند.
-) else (
-    echo [خطا] ابزار mysql پیدا نشد!
-    echo لطفاً مطمئن شوید WampServer شما روشن است و در مسیر استاندارد (C:\wamp64) نصب شده است.
-    echo شما می‌توانید فایل schema.sql را به صورت دستی در phpMyAdmin ایمپورت کنید.
 )
 
+if defined MYSQL_CMD goto :MYSQL_FOUND
+
+echo [Error] mysql tool was not found!
+echo Please make sure WampServer is running and installed in default folder (C:\wamp64).
+echo You can manually import schema.sql using phpMyAdmin.
+goto :END_MYSQL
+
+:MYSQL_FOUND
+echo Found MySQL at: %MYSQL_CMD%
+echo.
+
+:: Check if old database anbar_kharid exists to safely migrate data
+%MYSQL_CMD% -u root -e "USE anbar_kharid;" 2>nul
+if %ERRORLEVEL% neq 0 goto :NO_OLD_DB
+
+echo [Migration] Old database 'anbar_kharid' detected.
+echo Safely migrating existing data to new database 'purchase_db'...
+
+:: Create new database if not exists
+%MYSQL_CMD% -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+:: Try to backup and migrate using mysqldump
+%MYSQLDUMP_CMD% -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
+if not exist "%TEMP%\anbar_backup.sql" goto :MANUAL_COPY
+
+%MYSQL_CMD% -u root purchase_db < "%TEMP%\anbar_backup.sql"
+echo [Success] All items, departments, and requests migrated successfully to purchase_db!
+del "%TEMP%\anbar_backup.sql"
+goto :RUN_SCHEMA
+
+:MANUAL_COPY
+echo [Notice] Automated dump failed. Copying tables directly...
+%MYSQL_CMD% -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.items SELECT * FROM anbar_kharid.items;" 2>nul
+%MYSQL_CMD% -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.departments SELECT * FROM anbar_kharid.departments;" 2>nul
+%MYSQL_CMD% -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_requests SELECT * FROM anbar_kharid.purchase_requests;" 2>nul
+%MYSQL_CMD% -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_request_items SELECT * FROM anbar_kharid.purchase_request_items;" 2>nul
+echo [Success] Tables copied directly.
+goto :RUN_SCHEMA
+
+:NO_OLD_DB
+echo No old database found or already migrated.
+echo Creating database 'purchase_db' if not exists...
+%MYSQL_CMD% -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+:RUN_SCHEMA
+echo.
+echo Running schema and default seeds on purchase_db...
+%MYSQL_CMD% -u root purchase_db < "%SOURCE_DIR%schema.sql"
+echo Schema and default seeds checked/applied successfully.
+
+:END_MYSQL
 echo.
 echo =======================================================
-echo        عملیات دیپلوی با موفقیت به پایان رسید!
+echo          Deployment Completed Successfully!
 echo =======================================================
-echo آدرس دسترسی به برنامه: http://localhost/anbar_kharid
+echo Access your local app at: http://localhost/anbar_kharid
 echo =======================================================
 echo.
 pause
