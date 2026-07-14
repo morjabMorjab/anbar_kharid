@@ -1,4 +1,7 @@
 @echo off
+:: تغییر مسیر فعال به پوشه جاری فایل بت (بسیار مهم برای زمانی که Run as Admin می‌شود)
+cd /d "%~dp0"
+
 :: فعال‌سازی یونیکد (UTF-8) برای نمایش درست متون فارسی در خط فرمان ویندوز
 chcp 65001 >nul
 
@@ -23,7 +26,7 @@ if not exist "%DEST_DIR%" (
 echo.
 
 echo [2/3] کپی کردن فایل‌ها و پوشه فونت...
-:: کپی فایل‌های اصلی
+:: کپی فایل‌های اصلی با اطمینان از اورراید شدن
 copy /Y "%SOURCE_DIR%index.html" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%style.css" "%DEST_DIR%\"
 copy /Y "%SOURCE_DIR%script.js" "%DEST_DIR%\"
@@ -40,19 +43,43 @@ if exist "%SOURCE_DIR%fonts" (
 )
 echo.
 
-echo [3/3] اجرای فایل اسکیما (schema.sql) روی MySQL محلی...
-echo توجه: اطلاعات قبلی در دیتابیس حذف یا اورراید نمی‌شوند و رکوردهای تکراری ذخیره نخواهند شد.
-echo.
-
+echo [3/3] پیکربندی و راه‌اندازی دیتابیس MySQL محلی...
 :: بررسی وجود دستور mysql در سیستم
 where mysql >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    echo در حال ایجاد دیتابیس در صورت عدم وجود...
-    mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
     
-    echo در حال ایمپورت کردن ساختار جدول‌ها و داده‌های اولیه...
+    :: بررسی اینکه آیا دیتابیس قدیمی anbar_kharid وجود دارد تا اطلاعاتش را منتقل کنیم
+    mysql -u root -e "USE anbar_kharid;" 2>nul
+    if %ERRORLEVEL% equ 0 (
+        echo [انتقال اطلاعات] دیتابیس قدیمی 'anbar_kharid' شناسایی شد.
+        echo در حال انتقال ایمن اطلاعات قبلی شما به دیتابیس جدید 'purchase_db' ...
+        
+        :: ایجاد دیتابیس جدید در صورت عدم وجود
+        mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+        
+        :: گرفتن بکاپ از دیتابیس قدیمی و ایمپورت در جدید
+        mysqldump -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
+        if exist "%TEMP%\anbar_backup.sql" (
+            mysql -u root purchase_db < "%TEMP%\anbar_backup.sql"
+            echo [موفقیت] تمام کالاها، بخش‌ها و اسناد خرید قبلی با موفقیت منتقل شدند!
+            del "%TEMP%\anbar_backup.sql"
+        ) else (
+            echo [خطا] امکان بکاپ‌گیری خودکار نبود. جدول‌ها را به صورت دستی کپی می‌کنیم...
+            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.items SELECT * FROM anbar_kharid.items;" 2>nul
+            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.departments SELECT * FROM anbar_kharid.departments;" 2>nul
+            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_requests SELECT * FROM anbar_kharid.purchase_requests;" 2>nul
+            mysql -u root -e "CREATE TABLE IF NOT EXISTS purchase_db.purchase_request_items SELECT * FROM anbar_kharid.purchase_request_items;" 2>nul
+            echo [موفقیت] جدول‌های اطلاعاتی کپی شدند.
+        )
+    ) else (
+        echo دیتابیس قدیمی یافت نشد. در حال ایجاد دیتابیس جدید در صورت عدم وجود...
+        mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    )
+    
+    echo.
+    echo در حال اجرای کدهای ساختار اولیه و داده‌های پیش‌فرض (بدون حذف داده‌های قبلی)...
     mysql -u root purchase_db < "%SOURCE_DIR%schema.sql"
-    echo اسکیما با موفقیت روی دیتابیس MySQL محلی اجرا شد.
+    echo اسکیما با موفقیت بررسی و اعمال شد.
 ) else (
     echo [توجه] ابزار mysql در خط فرمان (PATH) ویندوز شما تعریف نشده است.
     echo لطفاً مطمئن شوید WampServer شما روشن است.

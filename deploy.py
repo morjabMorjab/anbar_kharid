@@ -56,11 +56,35 @@ def deploy():
         schema_path = os.path.join(source_dir, "schema.sql")
         if os.path.exists(schema_path):
             try:
-                # ایجاد دیتابیس در صورت عدم وجود
-                subprocess.run('mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"', shell=True, check=True)
-                # اجرای اسکیما
+                # بررسی وجود دیتابیس قدیمی anbar_kharid و انتقال اطلاعات آن
+                check_old_db = subprocess.run('mysql -u root -e "USE anbar_kharid;"', shell=True, capture_output=True)
+                if check_old_db.returncode == 0:
+                    print("[انتقال اطلاعات] دیتابیس قدیمی 'anbar_kharid' شناسایی شد.")
+                    print("در حال انتقال ایمن اطلاعات قبلی شما به دیتابیس جدید 'purchase_db'...")
+                    
+                    # ایجاد دیتابیس جدید
+                    subprocess.run('mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"', shell=True, check=True)
+                    
+                    # بکاپ و انتقال
+                    backup_file = os.path.join(os.environ.get('TEMP', '/tmp'), 'anbar_backup.sql')
+                    backup_cmd = f'mysqldump -u root anbar_kharid > "{backup_file}"'
+                    subprocess.run(backup_cmd, shell=True, check=True)
+                    
+                    if os.path.exists(backup_file):
+                        import_cmd = f'mysql -u root purchase_db < "{backup_file}"'
+                        subprocess.run(import_cmd, shell=True, check=True)
+                        print("[موفقیت] تمام کالاها، بخش‌ها و اسناد خرید قبلی با موفقیت منتقل شدند!")
+                        try:
+                            os.remove(backup_file)
+                        except:
+                            pass
+                else:
+                    # ایجاد دیتابیس جدید در صورت عدم وجود
+                    subprocess.run('mysql -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"', shell=True, check=True)
+                
+                # اجرای اسکیما برای اطمینان از ایجاد نهایی جدول‌ها و داده‌های Seed
                 subprocess.run(f'mysql -u root purchase_db < "{schema_path}"', shell=True, check=True)
-                print("schema.sql executed successfully on database: purchase_db")
+                print("schema.sql checked/executed successfully on database: purchase_db")
             except Exception as e:
                 print(f"Warning: Failed to execute schema.sql automatically. Is MySQL in your PATH? Error: {e}")
         else:
