@@ -158,9 +158,9 @@
                 </div>
                 <div class="card-body">
                     <form id="requestForm" onsubmit="event.preventDefault(); if (typeof submitRequestForm === 'function') { submitRequestForm(); } else { console.error('submitRequestForm not loaded yet!'); }">
-                        <div style="display: flex; align-items: right; gap: 7px; padding: 5px 15px; background: var(--bg-body); border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; width: fit-content;">
+                        <div style="display: flex; align-items: right; gap: 7px; padding: 5px 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; width: fit-content;">
                             <label class="fw-bold mb-0" style="white-space: nowrap; align-self: center; font-size: 14px;">تاریخ درخواست:</label>
-                            <input id="request_date" placeholder="سال/ماه/روز" required="" style="border: none; outline: none; background: transparent; width: 120px; text-align: center; font-family: 'BNazanin', sans-serif; font-weight: bold; font-size: 16px; direction: rtl !important; color: var(--text-main);" type="text"/>
+                            <input id="request_date" placeholder="سال/ماه/روز" required="" style="border: none; outline: none; background: transparent; width: 120px; text-align: center; font-family: 'BNazanin', sans-serif; font-weight: bold; font-size: 16px; direction: rtl !important;" type="text"/>
                         </div>
                         <div class="table-responsive">
                             <table class="table-excel">
@@ -198,7 +198,7 @@
                         <table class="table-hover align-middle mb-0 text-center">
                             <thead>
                                 <tr>
-                                    <th class="py-3">شماره درخواست</th>
+                                    <th class="py-3">کد سند</th>
                                     <th class="py-3">تعداد اقلام</th>
                                     <th class="py-3">تاریخ ثبت</th>
                                     <th class="py-3">وضعیت نهایی</th>
@@ -296,7 +296,7 @@
         </div>
         <div class="custom-modal-body">
             <!-- Inline form for adding new item directly from here -->
-            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: rgba(15, 118, 110, 0.15); border: 1px dashed var(--primary);">
+            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: #f0fdfa; border: 1px dashed var(--primary);">
                 <h6 class="fw-bold mb-3" style="color: var(--primary); font-family: 'BTitr', sans-serif; font-size: 15px;">➕ تعریف کالا جدید در سیستم</h6>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
@@ -334,7 +334,7 @@
         </div>
         <div class="custom-modal-body">
             <!-- Inline form for adding new department directly from here -->
-            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: rgba(15, 118, 110, 0.15); border: 1px dashed var(--primary);">
+            <div class="mb-4 p-3 rounded" style="direction: rtl; text-align: right; background-color: #f0fdfa; border: 1px dashed var(--primary);">
                 <h6 class="fw-bold mb-3" style="color: var(--primary); font-family: 'BTitr', sans-serif; font-size: 15px;">➕ تعریف بخش جدید در سیستم</h6>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
@@ -433,7 +433,7 @@
             <div class="mb-3">
                 <input type="text" id="modalSearchItemInput" class="form-control text-center fw-bold" placeholder="نام کالا را وارد کنید..." style="height: 42px; font-size: 15px; border-color: var(--primary);">
             </div>
-            <div id="modalSearchItemList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); margin-bottom: 15px;">
+            <div id="modalSearchItemList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 15px;">
                 <!-- List of items loaded dynamically -->
             </div>
             <div class="d-flex justify-content-between align-items-center">
@@ -455,7 +455,7 @@
             <div class="mb-3">
                 <input type="text" id="modalSearchDeptInput" class="form-control text-center fw-bold" placeholder="نام بخش را وارد کنید..." style="height: 42px; font-size: 15px; border-color: var(--primary);">
             </div>
-            <div id="modalSearchDeptList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); margin-bottom: 15px;">
+            <div id="modalSearchDeptList" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin-bottom: 15px;">
                 <!-- List of departments loaded dynamically -->
             </div>
             <div class="d-flex justify-content-between align-items-center">

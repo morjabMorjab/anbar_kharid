@@ -1120,7 +1120,7 @@ function renderModalSearchList(type) {
         
         // Show unit if it's an item and has unit dataset
         if (type === 'item' && opt.dataset.unit) {
-            row.innerHTML = `<span style="font-weight: bold;">${escapeHtml(text)}</span><span class="text-muted small" style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${escapeHtml(opt.dataset.unit)}</span>`;
+            row.innerHTML = `<span style="font-weight: bold;">${escapeHtml(text)}</span><span class="text-muted small" style="background: var(--sidebar-hover); color: var(--text-muted); padding: 2px 8px; border-radius: 4px; font-size: 11px;">${escapeHtml(opt.dataset.unit)}</span>`;
         } else {
             row.innerHTML = `<span style="font-weight: bold;">${escapeHtml(text)}</span>`;
         }
@@ -1204,14 +1204,14 @@ function makeModalSearchable(select, type, placeholder) {
     btn.style.fontSize = '14px';
     btn.style.border = '1.5px solid var(--border)';
     btn.style.borderRadius = '6px';
-    btn.style.backgroundColor = '#ffffff';
+    btn.style.backgroundColor = 'var(--bg-body)';
     btn.style.display = 'flex';
     btn.style.justifyContent = 'space-between';
     btn.style.alignItems = 'center';
     btn.style.fontFamily = "'BNazanin', sans-serif";
     btn.style.fontWeight = 'bold';
     btn.style.boxSizing = 'border-box';
-    btn.style.color = '#334155';
+    btn.style.color = 'var(--text-main)';
     btn.style.transition = 'border-color 0.2s, box-shadow 0.2s';
     
     wrapper.appendChild(btn);
