@@ -671,11 +671,12 @@ header {
 
 /* Print */
 @media print {
-    body { padding: 0 !important; background: white !important; }
+    body { padding: 0 !important; background: white !important; color: #000000 !important; }
     .app-wrapper, .main-content, .sidebar, .custom-modal, .toast-container { display: none !important; }
-    #printContainer { display: block !important; }
-    .print-table th { background: #f1f5f9 !important; border: 1px solid #000 !important; }
-    .print-table td { border: 1px solid #000 !important; }
+    #printContainer { display: block !important; color: #000000 !important; }
+    #printContainer * { color: #000000 !important; }
+    .print-table th { background: #f1f5f9 !important; border: 1px solid #000 !important; color: #000000 !important; }
+    .print-table td { border: 1px solid #000 !important; color: #000000 !important; }
 }
 
 .print-table {

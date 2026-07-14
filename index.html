@@ -29,6 +29,7 @@
         @media print {
             body {
                 background-color: white !important;
+                color: #000000 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 display: block !important; /* خنثی کردن تراز Flexbox جهت هم‌ترازی افقی */
@@ -39,6 +40,7 @@
             }
             #printContainer {
                 display: block !important;
+                color: #000000 !important;
                 width: 148mm !important;
                 max-width: 148mm !important;
                 margin: 0 !important;
@@ -48,6 +50,9 @@
                 padding-top: 10mm !important;
                 padding-bottom: 10mm !important;
                 box-sizing: border-box !important;
+            }
+            #printContainer, #printContainer * {
+                color: #000000 !important;
             }
             .print-table {
                 width: 100% !important;
