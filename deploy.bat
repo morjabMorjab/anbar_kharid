@@ -61,7 +61,7 @@ if !ERRORLEVEL! equ 0 (
     echo [جستجو] ابزار mysql در PATH سیستم تعریف نشده است.
     echo در حال جستجو در پوشه‌های پیش‌فرض WampServer...
     
-    :: جستجو در WampServer 64 بیتی
+    rem جستجو در WampServer 64 بیتی
     for /d %%d in (C:\wamp64\bin\mysql\mysql*) do (
         if exist "%%d\bin\mysql.exe" (
             set "MYSQL_CMD="%%d\bin\mysql.exe""
@@ -69,7 +69,7 @@ if !ERRORLEVEL! equ 0 (
         )
     )
     
-    :: جستجو در WampServer 32 بیتی (در صورت عدم یافتن نسخه 64 بیتی)
+    rem جستجو در WampServer 32 بیتی (در صورت عدم یافتن نسخه 64 بیتی)
     if not defined MYSQL_CMD (
         for /d %%d in (C:\wamp\bin\mysql\mysql*) do (
             if exist "%%d\bin\mysql.exe" (
@@ -84,16 +84,16 @@ if defined MYSQL_CMD (
     echo مسیر ابزار MySQL پیدا شد: !MYSQL_CMD!
     echo.
     
-    :: بررسی وجود دیتابیس قدیمی anbar_kharid برای انتقال ایمن اطلاعات
+    rem بررسی وجود دیتابیس قدیمی anbar_kharid برای انتقال ایمن اطلاعات
     !MYSQL_CMD! -u root -e "USE anbar_kharid;" 2>nul
     if !ERRORLEVEL! equ 0 (
         echo [انتقال اطلاعات] دیتابیس قدیمی 'anbar_kharid' شناسایی شد.
         echo در حال انتقال ایمن اطلاعات قبلی به دیتابیس جدید 'purchase_db' ...
         
-        :: ایجاد دیتابیس جدید در صورت عدم وجود
+        rem ایجاد دیتابیس جدید در صورت عدم وجود
         !MYSQL_CMD! -u root -e "CREATE DATABASE IF NOT EXISTS purchase_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
         
-        :: تلاش برای بکاپ‌گیری و انتقال اطلاعات با mysqldump
+        rem تلاش برای بکاپ‌گیری و انتقال اطلاعات با mysqldump
         !MYSQLDUMP_CMD! -u root anbar_kharid > "%TEMP%\anbar_backup.sql" 2>nul
         if exist "%TEMP%\anbar_backup.sql" (
             !MYSQL_CMD! -u root purchase_db < "%TEMP%\anbar_backup.sql"
