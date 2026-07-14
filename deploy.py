@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import subprocess
 
 def deploy():
     # مسیر مبدا (پروژه فعلی)
@@ -33,7 +34,7 @@ def deploy():
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
             print(f"Created directory: {dest_dir}")
-            
+        
         for item in files_to_copy:
             src_path = os.path.join(source_dir, item)
             dest_path = os.path.join(dest_dir, item)
@@ -49,7 +50,22 @@ def deploy():
                     print(f"Copied file: {item}")
             else:
                 print(f"Warning: {item} not found in source directory.")
-                
+        
+        # اجرای فایل schema.sql روی دیتابیس لوکال
+        print("\n--- Executing schema.sql on local MySQL server ---")
+        schema_path = os.path.join(source_dir, "schema.sql")
+        if os.path.exists(schema_path):
+            try:
+                # ایجاد دیتابیس در صورت عدم وجود
+                subprocess.run('mysql -u root -e "CREATE DATABASE IF NOT EXISTS anbar_kharid CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"', shell=True, check=True)
+                # اجرای اسکیما
+                subprocess.run(f'mysql -u root anbar_kharid < "{schema_path}"', shell=True, check=True)
+                print("schema.sql executed successfully.")
+            except Exception as e:
+                print(f"Warning: Failed to execute schema.sql automatically. Is MySQL in your PATH? Error: {e}")
+        else:
+            print("schema.sql not found.")
+
         print("\n--- Deployment Completed Successfully! ---")
         print(f"You can now access the app at: http://localhost/anbar_kharid")
         

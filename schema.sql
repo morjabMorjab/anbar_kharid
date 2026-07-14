@@ -2,13 +2,13 @@
 
 CREATE TABLE IF NOT EXISTS items (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE,
     unit VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS departments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS purchase_requests (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS purchase_request_items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed Data
-INSERT INTO departments (name) VALUES 
+INSERT IGNORE INTO departments (name) VALUES 
 ('اداری و پشتیبانی'), 
 ('بخش اورژانس'), 
 ('بخش جراحی'), 
@@ -39,7 +39,7 @@ INSERT INTO departments (name) VALUES
 ('داروخانه تک نسخه‌ای'), 
 ('امور مالی');
 
-INSERT INTO items (name, unit) VALUES 
+INSERT IGNORE INTO items (name, unit) VALUES 
 ('سرنگ ۵ سی سی لوئر لاک', 'عدد'),
 ('کابل شبکه Cat6 ده متری', 'عدد'),
 ('دستکش معاینه لایتکس', 'بسته'),
