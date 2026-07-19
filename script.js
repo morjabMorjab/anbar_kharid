@@ -505,12 +505,14 @@ function filterRequestsList() {
             let badge = '<span class="badge badge-pending">معلق</span>';
             if (isFull) badge = '<span class="badge badge-completed">✓ تامین کامل</span>';
             else if (totalPur > 0) badge = '<span class="badge badge-partial">تامین ناقص (' + toPersianDigits(totalPur) + ' از ' + toPersianDigits(totalReq) + ')</span>';
-            tr.innerHTML = '<td><strong>' + toPersianDigits(req.id) + '</strong></td>' +
+            tr.innerHTML = '<td><input type="checkbox" class="request-checkbox" value="' + req.id + '"></td>' +
+                '<td><strong>' + toPersianDigits(req.id) + '</strong></td>' +
                 '<td><span class="badge bg-dark">' + toPersianDigits(req.items.length) + ' ردیف</span></td>' +
                 '<td>' + toPersianDigits(req.request_date) + '</td>' +
                 '<td>' + badge + '</td>' +
                 '<td>' +
                     '<button class="btn btn-sm btn-outline-official" onclick="showDetails(' + req.id + ')">🔍 مشاهده و پیگیری</button> ' +
+                    '<button class="btn btn-sm btn-outline-success" style="margin-right: 5px;" onclick="exportSingleRequestToExcel(' + req.id + ')">📥 اکسل</button> ' +
                     '<button class="btn btn-sm btn-outline-warning" style="margin-right: 5px;" onclick="editDocument(' + req.id + ')">✏️ ویرایش</button> ' +
                     '<button class="btn btn-sm btn-outline-danger" style="margin-right: 5px;" onclick="deleteDocument(' + req.id + ')">🗑️ حذف</button>' +
                 '</td>';
@@ -1446,3 +1448,162 @@ window.openSearchModal = openSearchModal;
 window.renderModalSearchList = renderModalSearchList;
 
 
+
+function exportRequestsArrayToExcel(requestsArray, filenamePrefix) {
+    if (typeof XLSX === 'undefined') {
+        showToast('error', 'کتابخانه خروجی اکسل بارگیری نشده است.');
+        return;
+    }
+    const dataToExport = [];
+    dataToExport.push(['شماره درخواست', 'تاریخ درخواست', 'وضعیت نهایی', 'شرح کالا', 'بخش متقاضی', 'تعداد درخواستی', 'تعداد خریداری شده', 'کسری', 'توضیحات']);
+    
+    if (requestsArray.length === 0) {
+        showToast('error', 'هیچ سندی برای خروجی وجود ندارد.');
+        return;
+    }
+
+    requestsArray.forEach(req => {
+        const isFull = req.items.every(i => parseInt(i.purchased_quantity) >= parseInt(i.quantity));
+        const totalPur = req.items.reduce((s, i) => s + parseInt(i.purchased_quantity), 0);
+        let status = 'معلق';
+        if (isFull) status = 'تامین کامل';
+        else if (totalPur > 0) status = 'تامین ناقص';
+
+        req.items.forEach(item => {
+            const requested = parseInt(item.quantity);
+            const purchased = parseInt(item.purchased_quantity || 0);
+            const diff = requested - purchased;
+            dataToExport.push([
+                req.id,
+                req.request_date,
+                status,
+                item.item_name,
+                item.department_name,
+                requested,
+                purchased,
+                diff,
+                item.description || ''
+            ]);
+        });
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+    ws['!dir'] = 'rtl';
+    const wb = XLSX.utils.book_new();
+    if (!wb.Workbook) wb.Workbook = {};
+    if (!wb.Workbook.Views) wb.Workbook.Views = [];
+    wb.Workbook.Views.push({ RTL: true });
+    
+    XLSX.utils.book_append_sheet(wb, ws, "درخواست‌های خرید");
+    XLSX.writeFile(wb, `${filenamePrefix}.xlsx`);
+}
+
+function exportRequestsToExcel() {
+    const selectedIds = getSelectedRequestIds();
+    let requestsToExport = [];
+    
+    if (selectedIds.length > 0) {
+        requestsToExport = allRequests.filter(r => selectedIds.includes(r.id));
+    } else {
+        const query = document.getElementById('search_query').value.trim().toLowerCase();
+        const filterDept = document.getElementById('filter_dept').value;
+        const filterStatus = document.getElementById('filter_status').value;
+        const filterDate = document.getElementById('filter_date').value.trim();
+        
+        requestsToExport = allRequests.filter(req => {
+            const isFull = req.items.every(i => parseInt(i.purchased_quantity) >= parseInt(i.quantity));
+            const totalPur = req.items.reduce((s, i) => s + parseInt(i.purchased_quantity), 0);
+            if (filterStatus === 'purchased' && !isFull) return false;
+            if (filterStatus === 'pending' && totalPur > 0) return false;
+            if (filterStatus === 'partial' && (isFull || totalPur === 0)) return false;
+            if (filterDept && !req.items.some(i => parseInt(i.department_id) === parseInt(filterDept))) return false;
+            if (filterDate && !req.request_date.includes(filterDate)) return false;
+            if (query) {
+                const matchId = req.id.toString() === query || ("#" + req.id) === query;
+                const matchItem = req.items.some(i => 
+                    i.item_name.toLowerCase().includes(query) || 
+                    i.department_name.toLowerCase().includes(query) ||
+                    (i.description && i.description.toLowerCase().includes(query))
+                );
+                if (!matchId && !matchItem) return false;
+            }
+            return true;
+        });
+    }
+    
+    exportRequestsArrayToExcel(requestsToExport, "purchase_requests");
+}
+
+function exportUnpurchasedToExcel() {
+    if (typeof XLSX === 'undefined') {
+        showToast('error', 'کتابخانه خروجی اکسل بارگیری نشده است.');
+        return;
+    }
+    const dataToExport = [];
+    dataToExport.push(['ردیف', 'شماره درخواست', 'تاریخ درخواست', 'شرح کالا', 'بخش متقاضی', 'تعداد کسری', 'واحد', 'توضیحات']);
+    
+    let indexCounter = 1;
+    allRequests.forEach(req => {
+        req.items.forEach(item => {
+            const requested = parseInt(item.quantity);
+            const purchased = parseInt(item.purchased_quantity || 0);
+            const diff = requested - purchased;
+            
+            if (diff > 0) {
+                dataToExport.push([
+                    indexCounter++,
+                    req.id,
+                    req.request_date,
+                    item.item_name,
+                    item.department_name,
+                    diff,
+                    item.item_unit,
+                    item.description || ''
+                ]);
+            }
+        });
+    });
+
+    if (dataToExport.length === 1) {
+        showToast("error", "هیچ قلم کسری در کل سیستم وجود ندارد.");
+        return;
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+    ws['!dir'] = 'rtl';
+    const wb = XLSX.utils.book_new();
+    if (!wb.Workbook) wb.Workbook = {};
+    if (!wb.Workbook.Views) wb.Workbook.Views = [];
+    wb.Workbook.Views.push({ RTL: true });
+    
+    XLSX.utils.book_append_sheet(wb, ws, "کسری‌های درخواست خرید");
+    XLSX.writeFile(wb, "pending_requests.xlsx");
+}
+
+window.exportRequestsToExcel = exportRequestsToExcel;
+window.exportUnpurchasedToExcel = exportUnpurchasedToExcel;
+
+function toggleSelectAllRequests() {
+    const isChecked = document.getElementById('selectAllRequests').checked;
+    const checkboxes = document.querySelectorAll('.request-checkbox');
+    checkboxes.forEach(cb => cb.checked = isChecked);
+}
+
+function getSelectedRequestIds() {
+    const checkboxes = document.querySelectorAll('.request-checkbox:checked');
+    return Array.from(checkboxes).map(cb => parseInt(cb.value));
+}
+
+function exportSingleRequestToExcel(id) {
+    if (typeof XLSX === 'undefined') {
+        showToast('error', 'کتابخانه خروجی اکسل بارگیری نشده است.');
+        return;
+    }
+    const req = allRequests.find(r => r.id === id);
+    if (!req) return;
+    
+    exportRequestsArrayToExcel([req], `request_${id}`);
+}
+
+window.toggleSelectAllRequests = toggleSelectAllRequests;
+window.exportSingleRequestToExcel = exportSingleRequestToExcel;
